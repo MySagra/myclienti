@@ -11,96 +11,97 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Next.js](https://img.shields.io/badge/Next.js-16.0-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+</div>
 
-Un'applicazione web moderna e responsive per la gestione degli ordini dei clienti durante sagre ed eventi. Costruita con Next.js 16 e React 19, offre un'esperienza utente fluida per la navigazione del menu, la gestione del carrello e l'invio degli ordini.
+A modern and responsive web application for customer order management during festivals and events. Built with Next.js 16 and React 19, it provides a seamless user experience for menu browsing, cart management, and order submission.
 
-## ✨ Funzionalità
+## ✨ Features
 
-- 🍽️ **Menu Interattivo** - Navigazione per categorie con immagini e dettagli dei prodotti
-- 🛒 **Carrello Dinamico** - Gestione ordini in tempo reale con drawer laterale
-- 📱 **Design Responsive** - Ottimizzato per dispositivi mobili e desktop
-- 🎨 **UI Moderna** - Interfaccia pulita con TailwindCSS e Radix UI
-- 🔄 **Aggiornamenti Real-time** - Sincronizzazione stato con React Query
-- ✅ **Validazione** - Form e dati validati con Zod e React Hook Form
-- 🐳 **Docker Ready** - Deploy semplificato con Docker e Docker Compose
+- 🍽️ **Interactive Menu** - Browse categories with images and product details
+- 🛒 **Dynamic Cart** - Real-time order management with side drawer
+- 📱 **Responsive Design** - Optimized for both mobile and desktop devices
+- 🎨 **Modern UI** - Clean interface with TailwindCSS and Radix UI
+- 🔄 **Real-time Updates** - State synchronization with React Query
+- ✅ **Validation** - Forms and data validated with Zod and React Hook Form
+- 🐳 **Docker Ready** - Simplified deployment with Docker and Docker Compose
 
-## 🚀 Prerequisiti
+## 🚀 Prerequisites
 
-- **Node.js** 20.x o superiore
-- **pnpm** 9.x o superiore (consigliato) oppure npm/yarn
-- **Docker** e **Docker Compose** (opzionale, per deploy containerizzato)
+- **Node.js** 20.x or higher
+- **pnpm** 9.x or higher (recommended) or npm/yarn
+- **Docker** and **Docker Compose** (optional, for containerized deployment)
 
-## 📦 Installazione
+## 📦 Installation
 
-### Installazione Locale
+### Local Installation
 
-1. **Clona il repository**
+1. **Clone the repository**
    ```bash
    git clone https://github.com/mysagra/myclienti.git
    cd myclienti
    ```
 
-2. **Installa le dipendenze**
+2. **Install dependencies**
    ```bash
    pnpm install
    ```
 
-3. **Configura le variabili d'ambiente**
+3. **Configure environment variables**
    ```bash
    cp .env.template .env.local
    ```
    
-   Modifica `.env.local` con i tuoi valori:
+   Edit `.env.local` with your values:
    ```env
    MYSAGRA_API_URL=https://your-api-url.com
    ```
 
-4. **Avvia il server di sviluppo**
+4. **Start the development server**
    ```bash
    pnpm dev
    ```
 
-5. **Apri il browser** su [http://localhost:3000](http://localhost:3000)
+5. **Open your browser** at [http://localhost:3000](http://localhost:3000)
 
-### Installazione con Docker
+### Docker Installation
 
-1. **Clona il repository** (se non l'hai già fatto)
+1. **Clone the repository** (if you haven't already)
    ```bash
    git clone https://github.com/mysagra/myclienti.git
    cd myclienti
    ```
 
-2. **Configura le variabili d'ambiente**
+2. **Configure environment variables**
    
-   Crea un file `.env` nella root del progetto:
+   Create a `.env` file in the project root:
    ```env
    MYSAGRA_API_URL=https://your-api-url.com
    ```
 
-3. **Avvia con Docker Compose**
+3. **Start with Docker Compose**
    ```bash
    docker compose up -d
    ```
 
-4. **Accedi all'applicazione** su [http://localhost:3030](http://localhost:3030)
+4. **Access the application** at [http://localhost:3030](http://localhost:3030)
 
-## ⚙️ Configurazione
+## ⚙️ Configuration
 
-### Variabili d'Ambiente
+### Environment Variables
 
-| Variabile | Descrizione | Richiesta | Default |
-|-----------|-------------|-----------|---------|
-| `MYSAGRA_API_URL` | URL del backend API MySagra | Sì | - |
-| `NODE_ENV` | Ambiente di esecuzione | No | `production` |
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| `MYSAGRA_API_URL` | MySagra API backend URL | Yes | - |
+| `NODE_ENV` | Runtime environment | No | `production` |
 
-### Build di Produzione
+### Production Build
 
 ```bash
-# Build locale
+# Local build
 pnpm build
 pnpm start
 
-# Build Docker
+# Docker build
 docker build -t mysagra-customer-app .
 docker run -p 3000:3000 -e MYSAGRA_API_URL=https://api.example.com mysagra-customer-app
 ```
@@ -108,15 +109,15 @@ docker run -p 3000:3000 -e MYSAGRA_API_URL=https://api.example.com mysagra-custo
 ## 🛠️ Tech Stack
 
 ### Core
-- **[Next.js 16](https://nextjs.org/)** - Framework React con App Router
-- **[React 19](https://react.dev/)** - Libreria UI
+- **[Next.js 16](https://nextjs.org/)** - React framework with App Router
+- **[React 19](https://react.dev/)** - UI library
 - **[TypeScript](https://www.typescriptlang.org/)** - Type safety
 
 ### UI & Styling
 - **[TailwindCSS 4](https://tailwindcss.com/)** - Utility-first CSS framework
-- **[Radix UI](https://www.radix-ui.com/)** - Componenti accessibili headless
-- **[Lucide React](https://lucide.dev/)** - Icone moderne
-- **[Vaul](https://vaul.emilkowal.ski/)** - Drawer componenti
+- **[Radix UI](https://www.radix-ui.com/)** - Accessible headless components
+- **[Lucide React](https://lucide.dev/)** - Modern icons
+- **[Vaul](https://vaul.emilkowal.ski/)** - Drawer components
 - **[Sonner](https://sonner.emilkowal.ski/)** - Toast notifications
 
 ### State Management & Data Fetching
@@ -132,86 +133,86 @@ docker run -p 3000:3000 -e MYSAGRA_API_URL=https://api.example.com mysagra-custo
 - **[GitHub Actions](https://github.com/features/actions)** - CI/CD
 - **[GitHub Container Registry](https://ghcr.io)** - Docker image hosting
 
-## 📁 Struttura del Progetto
+## 📁 Project Structure
 
 ```
 myclienti/
 ├── app/                      # Next.js App Router
-│   ├── (login)/             # Gruppo route login
+│   ├── (login)/             # Login route group
 │   ├── api/                 # API Routes
-│   │   ├── orders/          # Gestione ordini
-│   │   └── proxy/uploads/   # Proxy immagini
-│   ├── cart/                # Pagina carrello
-│   ├── confirmation/        # Conferma ordine
-│   ├── menu/                # Menu e categorie
-│   └── layout.tsx           # Layout root
-├── components/              # Componenti React riutilizzabili
-│   └── ui/                  # Componenti UI base
+│   │   ├── orders/          # Order management
+│   │   └── proxy/uploads/   # Image proxy
+│   ├── cart/                # Cart page
+│   ├── confirmation/        # Order confirmation
+│   ├── menu/                # Menu and categories
+│   └── layout.tsx           # Root layout
+├── components/              # Reusable React components
+│   └── ui/                  # Base UI components
 ├── context/                 # React Context providers
 ├── schemas/                 # Zod validation schemas
-├── services/                # Servizi API
+├── services/                # API services
 ├── lib/                     # Utility functions
 └── public/                  # Static assets
 ```
 
-## 🔧 Comandi Disponibili
+## 🔧 Available Commands
 
 ```bash
-# Sviluppo
-pnpm dev          # Avvia dev server
-pnpm build        # Build production
-pnpm start        # Avvia production server
-pnpm lint         # Linting con ESLint
+# Development
+pnpm dev          # Start dev server
+pnpm build        # Build for production
+pnpm start        # Start production server
+pnpm lint         # Lint with ESLint
 
 # Docker
-docker compose up -d              # Avvia containers
-docker compose down               # Ferma containers
-docker compose up -d --build      # Rebuild e avvia
-docker compose logs -f myclienti  # Visualizza log
+docker compose up -d              # Start containers
+docker compose down               # Stop containers
+docker compose up -d --build      # Rebuild and start
+docker compose logs -f myclienti  # View logs
 ```
 
-## 🚢 Deploy
+## 🚢 Deployment
 
 ### GitHub Container Registry
 
-Il progetto è configurato con GitHub Actions per il deploy automatico su GitHub Container Registry ad ogni release.
+The project is configured with GitHub Actions for automatic deployment to GitHub Container Registry on every release.
 
-1. **Configura il secret** `MYSAGRA_API_URL` nelle impostazioni del repository
-2. **Crea una release** per triggerare la build automatica
-3. **Pull dell'immagine**:
+1. **Configure the secret** `MYSAGRA_API_URL` in repository settings
+2. **Create a release** to trigger the automatic build
+3. **Pull the image**:
    ```bash
    docker pull ghcr.io/mysagra/mysagra-myclienti:latest
    ```
 
-### Deploy Manuale
+### Manual Deployment
 
 ```bash
-# Login a GHCR
+# Login to GHCR
 echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
 
-# Build e push
+# Build and push
 docker build -t ghcr.io/mysagra/mysagra-myclienti:latest .
 docker push ghcr.io/mysagra/mysagra-myclienti:latest
 ```
 
-## 🤝 Contribuire
+## 🤝 Contributing
 
-I contributi sono benvenuti! Segui questi passi:
+Contributions are welcome! Follow these steps:
 
-1. Fai un fork del progetto
-2. Crea un branch per la tua feature (`git checkout -b feature/AmazingFeature`)
-3. Committa le tue modifiche (`git commit -m 'Add some AmazingFeature'`)
-4. Pusha sul branch (`git push origin feature/AmazingFeature`)
-5. Apri una Pull Request
+1. Fork the project
+2. Create a branch for your feature (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## 📄 Licenza
+## 📄 License
 
-Questo progetto è rilasciato sotto licenza **GNU General Public License v3.0**. Vedi il file [LICENSE](LICENSE) per maggiori dettagli.
+This project is released under the **GNU General Public License v3.0**. See the [LICENSE](LICENSE) file for more details.
 
-## 📧 Contatti
+## 📧 Contact
 
-Per domande, suggerimenti o supporto, apri una [issue](https://github.com/mysagra/myclienti/issues) su GitHub.
+For questions, suggestions, or support, open an [issue](https://github.com/mysagra/myclienti/issues) on GitHub.
 
 ---
 
-Sviluppato con ❤️ per MySagra
+Developed with ❤️ for MySagra
