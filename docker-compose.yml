@@ -1,17 +1,17 @@
 services:
-  mysagra-customer-app:
+  myclienti:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        - MYSAGRA_API_URL=http://mysagra-api:4300
-    container_name: mysagra-customer-app
+        - MYSAGRA_API_URL=${MYSAGRA_API_URL}
+    container_name: myclienti
     restart: always
     ports:
       - "3030:3000"
     environment:
       - NODE_ENV=production
-      - MYSAGRA_API_URL=http://mysagra-api:4300
+      - MYSAGRA_API_URL=${MYSAGRA_API_URL}
     networks:
       - mysagra_default
 

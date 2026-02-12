@@ -1,14 +1,21 @@
 "use client"
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, ClipboardList } from "lucide-react";
 import { OrderLoading } from "./components/orderLoading";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 
 const ConfirmationPage = () => {
-  const { items, totalPrice, clearItems, name, tableNumber, displayCode, setDisplayCode, isHydrated } = useCart();
+  const { items, totalPrice, clearItems, clearCart, name, tableNumber, displayCode, setDisplayCode, isHydrated } = useCart();
   const router = useRouter();
 
   useEffect(() => {
@@ -60,9 +67,12 @@ const ConfirmationPage = () => {
   }, []);
 
   const handleNewOrder = () => {
-    clearItems();
-    setDisplayCode("");
-    router.push("/menu");
+    // Save user info before clearing for login form precompilation
+    sessionStorage.setItem("mysagra-user", JSON.stringify({ name, tableNumber }));
+    // Remove cart storage to prevent redirect issues
+    sessionStorage.removeItem("mysagra-cart");
+    clearCart();
+    router.replace("/");
   };
 
   if (!isHydrated || items.length === 0) {
@@ -142,6 +152,45 @@ const ConfirmationPage = () => {
         >
           Crea un nuovo ordine
         </Button>
+
+        <Drawer>
+          <DrawerTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full h-12 text-base font-medium mt-3"
+            >
+              <ClipboardList className="w-5 h-5 mr-2" />
+              Vedi riepilogo ordine
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle className="text-center text-xl">Riepilogo ordine</DrawerTitle>
+            </DrawerHeader>
+            <div className="px-4 pb-6 max-h-[60vh] overflow-y-auto">
+              <div className="space-y-3">
+                {items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex justify-between items-center py-2 border-b border-border last:border-0"
+                  >
+                    <div className="flex-1">
+                      <span className="font-medium text-foreground">{item.name}</span>
+                      <span className="text-muted-foreground ml-2">x{item.quantity}</span>
+                    </div>
+                    <span className="font-bold text-foreground">
+                      {(item.price * item.quantity).toFixed(2)}€
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between items-center mt-4 pt-4 border-t border-border">
+                <span className="text-lg font-bold">Totale</span>
+                <span className="text-lg font-bold text-primary">{totalPrice.toFixed(2)}€</span>
+              </div>
+            </div>
+          </DrawerContent>
+        </Drawer>
       </div>
     </div>
   );

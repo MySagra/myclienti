@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -42,14 +42,6 @@ export default function CartPage() {
       <Header />
 
       <main className="container max-w-lg mx-auto px-4 py-6">
-        <Link
-          href="/menu"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Continua ad ordinare
-        </Link>
-
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-foreground">Il tuo ordine</h1>
           <Button

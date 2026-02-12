@@ -7,7 +7,7 @@ interface CategoryCardProps {
 
 const CategoryCard = ({ category }: CategoryCardProps) => {
   return (
-    <Link href={`/menu/${category.id}`} className="block group">
+    <Link href={`/menu/${encodeURIComponent(category.name)}`} className="block group">
       <div className="bg-card rounded-md overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
         <div className="h-32 bg-muted overflow-hidden">
           {category.image ? (

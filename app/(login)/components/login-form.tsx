@@ -20,6 +20,20 @@ export function LoginForm() {
     const [isLoading, setIsLoading] = useState(false);
     const { setName, setTableNumber } = useCart();
 
+    // Read saved user info for precompilation
+    const getSavedUser = () => {
+        if (typeof window === "undefined") return { name: "", table: "" };
+        try {
+            const saved = sessionStorage.getItem("mysagra-user");
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                return { name: parsed.name || "", table: parsed.tableNumber || "" };
+            }
+        } catch {}
+        return { name: "", table: "" };
+    };
+    const savedUser = getSavedUser();
+
     const formSchema = z.object({
         name: z.string().min(1, "Nome obbligatorio"),
         table: z.string().min(1, "Numero tavolo obbligatorio").regex(/^\d+$/, "Inserisci solo numeri"),
@@ -28,14 +42,15 @@ export function LoginForm() {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: "",
-            table: ""
+            name: savedUser.name,
+            table: savedUser.table
         }
     });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setName(values.name);
         setTableNumber(values.table);
+        sessionStorage.removeItem("mysagra-user");
         router.push("/menu");
     }
 
