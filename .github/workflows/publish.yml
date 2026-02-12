@@ -35,7 +35,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./docker/images/mysagra-myclienti/Dockerfile
+          file: ./Dockerfile
           push: true
           tags: ghcr.io/mysagra/${{ env.IMAGE_NAME_CLIENTI }}:latest
           platforms: linux/amd64,linux/arm64
