@@ -19,10 +19,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build argument for API URL
-ARG MYSAGRA_API_URL
-ENV MYSAGRA_API_URL=$MYSAGRA_API_URL
-
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.

@@ -3,8 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - MYSAGRA_API_URL=${MYSAGRA_API_URL}
     container_name: myclienti
     restart: always
     ports:
