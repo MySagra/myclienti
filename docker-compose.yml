@@ -1,0 +1,20 @@
+services:
+  myclienti:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - MYSAGRA_API_URL=${MYSAGRA_API_URL}
+    container_name: myclienti
+    restart: always
+    ports:
+      - "3030:3000"
+    environment:
+      - NODE_ENV=production
+      - MYSAGRA_API_URL=${MYSAGRA_API_URL}
+    networks:
+      - mysagra_default
+
+networks:
+  mysagra_default:
+    external: true
