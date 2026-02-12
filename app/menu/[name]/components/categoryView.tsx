@@ -149,7 +149,7 @@ export function CategoryView({ categories, initialName }: CategoryViewProps) {
       {/* Scrollable food items */}
       <div
         ref={contentRef}
-        className="flex-1 min-h-0 overflow-y-auto pb-24 -webkit-overflow-scrolling-touch"
+        className="flex-1 min-h-0 overflow-y-auto pb-8 -webkit-overflow-scrolling-touch"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         <div
