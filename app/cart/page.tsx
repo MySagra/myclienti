@@ -1,15 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { AlertTriangleIcon } from "lucide-react"
 
 export default function CartPage() {
   const { items, totalPrice, addItem, removeItem, clearItems } = useCart();
-    const router = useRouter();
+  const router = useRouter();
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const handleCheckout = () => {
     if (items.length > 0) {
@@ -38,10 +42,10 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="flex flex-col h-screen bg-background">
       <Header />
 
-      <main className="container max-w-lg mx-auto px-4 py-6">
+      <main className="container max-w-lg mx-auto px-4 py-6 flex flex-col flex-1 overflow-hidden">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-foreground">Il tuo ordine</h1>
           <Button
@@ -54,8 +58,26 @@ export default function CartPage() {
             Svuota
           </Button>
         </div>
+        <Alert className="max-w-full mb-4 border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50">
+          <AlertTriangleIcon />
+          <AlertTitle>Modifiche agli alimenti</AlertTitle>
+          <AlertDescription>
+            Per eventuali modifiche agli alimenti si prega di comunicarle in cassa. 
+            Ogni aggiunta comporterà un sovrapprezzo di 0,50€.
+          </AlertDescription>
+        </Alert>
+  
+        <div className="relative">
+          <div className={`absolute top-0 left-0 right-0 h-12 bg-linear-to-b from-background/80 to-transparent pointer-events-none z-10 transition-opacity duration-300 ${isScrolled ? 'opacity-100' : 'opacity-0'}`} />
+        </div>
 
-        <div className="space-y-3">
+        <div 
+          className="flex-1 overflow-y-auto space-y-3 pb-4"
+          onScroll={(e) => {
+            const target = e.target as HTMLDivElement;
+            setIsScrolled(target.scrollTop > 0);
+          }}
+        >
           {items.map((item) => (
             <div
               key={item.id}
@@ -73,7 +95,7 @@ export default function CartPage() {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-8 w-8 rounded-full"
+                    className="h-9 w-9 rounded-lg"
                     onClick={() => removeItem(item.id)}
                   >
                     <Minus className="h-3 w-3" />
@@ -86,7 +108,7 @@ export default function CartPage() {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-8 w-8 rounded-full"
+                    className="h-9 w-9 rounded-lg"
                     onClick={() => addItem(item)}
                   >
                     <Plus className="h-3 w-3" />
@@ -98,7 +120,7 @@ export default function CartPage() {
         </div>
       </main>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 shadow-lg">
+      <div className="shrink-0 bg-card border-t border-border p-4 shadow-lg">
         <div className="container max-w-lg mx-auto space-y-3">
           <div className="flex justify-between items-center text-lg">
             <span className="font-medium">Totale</span>

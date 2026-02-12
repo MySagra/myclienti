@@ -27,7 +27,7 @@ export default async function OrderPage({ params }: { params: Promise<{ name: st
     }
 
     return (
-        <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
+        <div className="h-screen flex flex-col bg-background overflow-hidden">
             <Header />
 
             <main className="flex-1 min-h-0 container max-w-lg mx-auto px-4 w-full">
