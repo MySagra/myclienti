@@ -50,18 +50,28 @@ export function CategoryView({ categories, initialName }: CategoryViewProps) {
 
   // Swipe support
   const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
   const touchEndX = useRef(0);
+  const isHorizontalSwipe = useRef(false);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
     touchEndX.current = e.touches[0].clientX;
+    isHorizontalSwipe.current = false;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     touchEndX.current = e.touches[0].clientX;
+    const diffX = Math.abs(e.touches[0].clientX - touchStartX.current);
+    const diffY = Math.abs(e.touches[0].clientY - touchStartY.current);
+    if (diffX > diffY && diffX > 10) {
+      isHorizontalSwipe.current = true;
+    }
   };
 
   const handleTouchEnd = () => {
+    if (!isHorizontalSwipe.current) return;
     const diff = touchStartX.current - touchEndX.current;
     if (Math.abs(diff) > 50) {
       if (diff > 0) goNext();
@@ -81,7 +91,7 @@ export function CategoryView({ categories, initialName }: CategoryViewProps) {
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="flex flex-col h-[calc(100vh-4rem)]"
+      className="flex flex-col h-full"
     >
       {/* Fixed category navigation */}
       <div className="flex flex-col items-center gap-2 pt-6 pb-4 bg-background relative z-10">
@@ -139,7 +149,8 @@ export function CategoryView({ categories, initialName }: CategoryViewProps) {
       {/* Scrollable food items */}
       <div
         ref={contentRef}
-        className="flex-1 overflow-y-auto pb-24"
+        className="flex-1 min-h-0 overflow-y-auto pb-24 -webkit-overflow-scrolling-touch"
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
         <div
           key={currentIndex}

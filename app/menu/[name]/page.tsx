@@ -27,16 +27,15 @@ export default async function OrderPage({ params }: { params: Promise<{ name: st
     }
 
     return (
-        <div className="h-screen bg-background overflow-hidden">
+        <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
             <Header />
 
-            <main className="container max-w-lg mx-auto px-4">
+            <main className="flex-1 min-h-0 container max-w-lg mx-auto px-4 w-full">
                 <CategoryView
                     categories={sortedCategories}
                     initialName={decodedName}
                 />
             </main>
-
         </div>
     );
 
