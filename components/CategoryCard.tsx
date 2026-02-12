@@ -6,13 +6,19 @@ interface CategoryCardProps {
 }
 
 const CategoryCard = ({ category }: CategoryCardProps) => {
+  // Extract filename from the full URL
+  const getImageFilename = (url: string) => {
+    const match = url.match(/category-[^/]+\.jpg$/);
+    return match ? match[0] : url;
+  };
+
   return (
     <Link href={`/menu/${encodeURIComponent(category.name)}`} className="block group">
       <div className="bg-card rounded-md overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
         <div className="h-32 bg-muted overflow-hidden">
           {category.image ? (
             <img
-              src={`/api/proxy/uploads/category-images/${category.image}`}
+              src={`/api/proxy/uploads/categories/${getImageFilename(category.image)}`}
               alt={category.name}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
