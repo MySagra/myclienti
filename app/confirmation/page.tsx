@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
@@ -17,10 +17,14 @@ import {
 const ConfirmationPage = () => {
   const { items, totalPrice, clearItems, clearCart, name, tableNumber, displayCode, setDisplayCode, isHydrated } = useCart();
   const router = useRouter();
+  const hasSubmittedRef = useRef(false);
 
   useEffect(() => {
     if (!isHydrated) return;
     if (displayCode) return;
+    if (hasSubmittedRef.current) return;
+
+    hasSubmittedRef.current = true;
 
     const orderItems = items.map(item => ({
       foodId: item.id,
@@ -81,7 +85,7 @@ const ConfirmationPage = () => {
 
   if (!displayCode) {
     return (
-      <div className="h-screen flex items-center place-content-center">
+      <div className="h-dvh flex items-center place-content-center">
         <OrderLoading />
       </div>
     );
@@ -89,7 +93,7 @@ const ConfirmationPage = () => {
 
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-dvh bg-background flex items-center justify-center p-4">
       <div className="max-w-md w-full text-center">
         <CheckCircle className="w-16 h-16 mx-auto text-primary mb-6" />
 
@@ -122,7 +126,7 @@ const ConfirmationPage = () => {
             <li className="flex items-start gap-3">
               <span className="text-xl">👉</span>
               <span className="text-foreground">
-                Vai in cassa e comunica il tuo codice ordine
+                Vai in cassa e comunica il tuo codice ordine ed eventuali modifiche
               </span>
             </li>
             <li className="flex items-start gap-3">
@@ -138,9 +142,9 @@ const ConfirmationPage = () => {
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-xl">📢</span>
+              <span className="text-xl">🍕</span>
               <span className="text-foreground">
-                Quando l'ordine sarà pronto, verrai chiamato con il codice ordine oppure il numero sullo scontrino
+                Quando l'ordine sarà pronto ti sarà consegnato direttamente al tuo tavolo!
               </span>
             </li>
           </ul>

@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function Menu() {
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
+    <div className="h-dvh flex flex-col bg-background overflow-hidden">
       <Header />
 
       <main className="flex-1 overflow-y-auto scrollbar-hide relative">

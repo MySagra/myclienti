@@ -23,7 +23,7 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-dvh bg-background">
         <Header />
         <main className="container max-w-lg mx-auto px-4 py-12">
           <div className="text-center">
@@ -42,7 +42,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-dvh bg-background">
       <Header />
 
       <main className="container max-w-lg mx-auto px-4 py-6 flex flex-col flex-1 overflow-hidden">
@@ -62,16 +62,16 @@ export default function CartPage() {
           <AlertTriangleIcon />
           <AlertTitle>Modifiche agli alimenti</AlertTitle>
           <AlertDescription>
-            Per eventuali modifiche agli alimenti si prega di comunicarle in cassa. 
+            Per eventuali modifiche agli alimenti si prega di comunicarle in cassa.
             Ogni aggiunta comporterà un sovrapprezzo di 0,50€.
           </AlertDescription>
         </Alert>
-  
+
         <div className="relative">
           <div className={`absolute top-0 left-0 right-0 h-12 bg-linear-to-b from-background/80 to-transparent pointer-events-none z-10 transition-opacity duration-300 ${isScrolled ? 'opacity-100' : 'opacity-0'}`} />
         </div>
 
-        <div 
+        <div
           className="flex-1 overflow-y-auto space-y-3 pb-4"
           onScroll={(e) => {
             const target = e.target as HTMLDivElement;
