@@ -94,7 +94,7 @@ export function CategoryView({ categories, initialName }: CategoryViewProps) {
       className="flex flex-col h-full"
     >
       {/* Fixed category navigation */}
-      <div className="flex flex-col items-center gap-2 pt-6 pb-4 bg-background relative z-10">
+      <div className="flex flex-col shrink-0 items-center gap-2 pt-6 pb-4 bg-background relative z-10">
         <div className="flex items-center justify-between w-full">
           <button
             onClick={goPrev}
@@ -163,8 +163,8 @@ export function CategoryView({ categories, initialName }: CategoryViewProps) {
         >
           {category.foods
             ? category.foods.map((food) => (
-                <FoodItemCard key={food.id} food={food} />
-              ))
+              <FoodItemCard key={food.id} food={food} />
+            ))
             : null}
         </div>
       </div>

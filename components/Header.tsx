@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, House} from "lucide-react";
+import { ShoppingCart, House } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 
 
@@ -9,7 +9,7 @@ const Header = () => {
   const { totalItems, totalPrice } = useCart();
 
   return (
-    <header className="sticky top-0 z-50 bg-card border-b border-border">
+    <header className="sticky top-0 z-50 shrink-0 bg-card border-b border-border">
       <div className="container max-w-lg mx-auto px-4">
         <nav className="relative flex items-center justify-between py-3">
 
