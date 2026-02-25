@@ -162,9 +162,11 @@ export function CategoryView({ categories, initialName }: CategoryViewProps) {
           }}
         >
           {category.foods
-            ? category.foods.map((food) => (
-              <FoodItemCard key={food.id} food={food} />
-            ))
+            ? [...category.foods]
+              .sort((a, b) => a.name.localeCompare(b.name, "it"))
+              .map((food) => (
+                <FoodItemCard key={food.id} food={food} />
+              ))
             : null}
         </div>
       </div>
