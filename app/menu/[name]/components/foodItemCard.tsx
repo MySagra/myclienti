@@ -18,31 +18,35 @@ export function FoodItemCard({ food }: FoodItemCardProps) {
   const quantity = getItemQuantity(food.id);
 
   return <div className="bg-card rounded-lg p-4 shadow-sm border border-border">
-      <div className="mb-2">
-        <h3 className="font-semibold text-lg text-foreground">{food.name}</h3>
-        {food.description && <p className="text-sm text-muted-foreground mt-1">
-            {food.description}
-          </p>}
-      </div>
-
-      <div className="flex justify-between items-center">
-        <p className="text-primary font-bold text-lg">
-          {food.price}€
+    <div className="mb-2">
+      <h3 className="font-semibold text-lg text-foreground">{food.name}</h3>
+      {(food.description || (food.ingredients && food.ingredients.length > 0)) && (
+        <p className="text-sm text-muted-foreground mt-1">
+          {food.description
+            ? food.description
+            : food.ingredients!.map((i) => i.name).join(", ")}
         </p>
+      )}
+    </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => removeItem(food.id)} disabled={quantity === 0} className="h-9 w-9 rounded-lg">
-            <Minus className="h-4 w-4" />
-          </Button>
-          
-          <span className="w-8 text-center font-semibold text-lg">
-            {quantity}
-          </span>
-          
-          <Button variant="outline" size="icon" onClick={() => addItem(food)} className="h-9 w-9 rounded-lg">
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
+    <div className="flex justify-between items-center">
+      <p className="text-primary font-bold text-lg">
+        {food.price}€
+      </p>
+
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="icon" onClick={() => removeItem(food.id)} disabled={quantity === 0} className="h-9 w-9 rounded-lg">
+          <Minus className="h-4 w-4" />
+        </Button>
+
+        <span className="w-8 text-center font-semibold text-lg">
+          {quantity}
+        </span>
+
+        <Button variant="outline" size="icon" onClick={() => addItem(food)} className="h-9 w-9 rounded-lg">
+          <Plus className="h-4 w-4" />
+        </Button>
       </div>
-    </div>;
+    </div>
+  </div>;
 };
