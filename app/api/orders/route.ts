@@ -24,10 +24,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Estrae l'IP reale del client e lo propaga al backend
+    // così il rate limiter vede l'IP del client e non quello del server Next.js
+    const clientIp =
+      request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+      request.headers.get("x-real-ip") ??
+      "unknown";
+
     const response = await fetch(`${apiUrl}/v1/orders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Forwarded-For": clientIp,
       },
       body: JSON.stringify(validationResult.data),
     });
