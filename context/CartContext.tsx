@@ -49,11 +49,12 @@ interface CartContextType {
   isHydrated: boolean;
   displayCode: string;
   setDisplayCode: (code: string) => void;
+  requireTable: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export const CartProvider = ({ children }: { children: ReactNode }) => {
+export const CartProvider = ({ children, requireTable }: { children: ReactNode; requireTable: boolean }) => {
   const router = useRouter();
   const pathname = usePathname();
   const [isHydrated, setIsHydrated] = useState(false);
@@ -66,7 +67,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const stored = getStoredCart();
     setNameState(stored.name);
-    setTableNumberState(stored.tableNumber);
+    setTableNumberState(requireTable ? stored.tableNumber : "0");
     setItems(stored.items);
     setDisplayCodeState(stored.displayCode || "");
     setIsHydrated(true);
@@ -75,10 +76,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // Redirect to login if name or tableNumber is missing
   useEffect(() => {
     if (!isHydrated) return;
-    
+
     // Don't redirect if already on login page
     if (pathname === "/" || pathname === "/login") return;
-    
+
     if (!name || !tableNumber) {
       router.push("/");
     }
@@ -157,7 +158,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  
+
   const totalPrice = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -182,6 +183,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         isHydrated,
         displayCode,
         setDisplayCode,
+        requireTable,
       }}
     >
       {children}
