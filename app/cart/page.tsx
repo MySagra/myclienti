@@ -9,11 +9,22 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertTriangleIcon } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function CartPage() {
   const { items, totalPrice, addItem, removeItem, clearItems } = useCart();
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
 
   const handleCheckout = () => {
     if (items.length > 0) {
@@ -52,7 +63,7 @@ export default function CartPage() {
             variant="ghost"
             size="sm"
             className="text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={clearItems}
+            onClick={() => setClearDialogOpen(true)}
           >
             <Trash2 className="w-4 h-4 mr-1" />
             Svuota
@@ -136,6 +147,27 @@ export default function CartPage() {
           </Button>
         </div>
       </div>
+
+      <AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Svuotare il carrello?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tutti gli articoli nel carrello verranno rimossi. Sei sicuro di
+              voler continuare?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { clearItems(); setClearDialogOpen(false); }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Svuota
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

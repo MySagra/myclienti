@@ -18,7 +18,7 @@ import { useCart } from "@/context/CartContext"
 export function LoginForm() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
-    const { setName, setTableNumber } = useCart();
+    const { setName, setTableNumber, requireTable } = useCart();
 
     // Read saved user info for precompilation
     const getSavedUser = () => {
@@ -29,27 +29,33 @@ export function LoginForm() {
                 const parsed = JSON.parse(saved);
                 return { name: parsed.name || "", table: parsed.tableNumber || "" };
             }
-        } catch {}
+        } catch { }
         return { name: "", table: "" };
     };
     const savedUser = getSavedUser();
 
     const formSchema = z.object({
-        name: z.string().min(1, "Nome obbligatorio"),
-        table: z.string().min(1, "Numero tavolo obbligatorio").regex(/^\d+$/, "Inserisci solo numeri"),
+        name: z.string().min(1, "Nome obbligatorio").max(36, "Il nome non può superare 36 caratteri"),
+        table: requireTable
+            ? z.string()
+                .min(1, "Numero tavolo obbligatorio")
+                .regex(/^\d+$/, "Inserisci solo numeri")
+                .refine((v) => parseInt(v, 10) >= 1, { message: "Il tavolo deve essere almeno 1" })
+                .refine((v) => parseInt(v, 10) <= 9999, { message: "Il tavolo non può superare 9999" })
+            : z.string().optional(),
     });
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: savedUser.name,
-            table: savedUser.table
+            table: requireTable ? savedUser.table : "0",
         }
     });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setName(values.name);
-        setTableNumber(values.table);
+        setTableNumber(requireTable ? (values.table ?? "0") : "0");
         sessionStorage.removeItem("mysagra-user");
         router.push("/menu");
     }
@@ -103,25 +109,27 @@ export function LoginForm() {
                                         )}
                                     />
                                 </Field>
-                                <Field>
-                                    <FieldLabel htmlFor="table">Numero tavolo</FieldLabel>
-                                    <FormField
-                                        control={form.control}
-                                        name="table"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormControl>
-                                                    <Input
-                                                        autoComplete="off"
-                                                        placeholder="Numero tavolo"
-                                                        inputMode="numeric"
-                                                        {...field}
-                                                    />
-                                                </FormControl>
-                                            </FormItem>
-                                        )}
-                                    />
-                                </Field>
+                                {requireTable && (
+                                    <Field>
+                                        <FieldLabel htmlFor="table">Numero tavolo</FieldLabel>
+                                        <FormField
+                                            control={form.control}
+                                            name="table"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormControl>
+                                                        <Input
+                                                            autoComplete="off"
+                                                            placeholder="Numero tavolo"
+                                                            inputMode="numeric"
+                                                            {...field}
+                                                        />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </Field>
+                                )}
                                 <Field>
                                     <Button type="submit" disabled={isLoading} className="w-full select-none">
                                         {isLoading ? "Accesso..." : "Accedi"}

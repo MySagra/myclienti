@@ -24,12 +24,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const requireTable = process.env.REQUIRE_TABLE !== "false";
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <CartProvider>
+        <CartProvider requireTable={requireTable}>
           {children}
           <Toaster position="top-center" richColors />
         </CartProvider>
