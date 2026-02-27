@@ -151,17 +151,19 @@ export default function CartPage() {
       <AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Svuotare il carrello?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tutti gli articoli nel carrello verranno rimossi. Sei sicuro di
-              voler continuare?
+            <AlertDialogTitle className="text-xl text-center">Svuotare il carrello?</AlertDialogTitle>
+            <AlertDialogDescription className="text-left w-full">
+              Tutti gli articoli nel carrello <strong>verranno rimossi</strong>.
+              <br />
+              Sei sicuro di voler continuare?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annulla</AlertDialogCancel>
+          <AlertDialogFooter className="flex flex-row gap-2 sm:space-x-0">
+            <AlertDialogCancel className="flex-1 mt-0 sm:mt-0">Annulla</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => { clearItems(); setClearDialogOpen(false); }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="flex-1"
+              variant="destructive"
             >
               Svuota
             </AlertDialogAction>
