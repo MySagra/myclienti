@@ -90,9 +90,9 @@ export function LoginForm() {
                                     className="mx-auto h-36 w-auto select-none"
                                 />
                                 <div className="flex flex-col items-center gap-2 text-center">
-                                    <h1 className="text-2xl font-bold select-none">Benvenuto!</h1>
-                                    <p className="text-muted-foreground text-balance select-none">
-                                        Dicci a chi dobbiamo portare le nostre delizie 🍝
+                                    <h1 className="text-2xl font-bold select-none">Ciao!</h1>
+                                    <p className="text-muted-foreground select-none">
+                                        Pronti a servirti! A chi portiamo l'ordine?
                                     </p>
                                 </div>
                                 <Field>
@@ -132,7 +132,7 @@ export function LoginForm() {
                                 )}
                                 <Field>
                                     <Button type="submit" disabled={isLoading} className="w-full select-none">
-                                        {isLoading ? "Accesso..." : "Accedi"}
+                                        {isLoading ? "Preparando il menù..." : "Inizia a ordinare"}
                                     </Button>
                                 </Field>
                             </FieldGroup>

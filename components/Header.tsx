@@ -78,19 +78,17 @@ const Header = () => {
       <AlertDialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Uscire dalla sessione?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Stai per uscire dalla sessione corrente.{" "}
-              <strong>Tutti i dati verranno persi</strong>: il carrello, il tuo
-              nome e il numero del tavolo verranno cancellati e non sarà
-              possibile recuperarli. Sei sicuro di voler continuare?
+            <AlertDialogTitle className="text-xl text-center">Uscire dalla sessione?</AlertDialogTitle>
+            <AlertDialogDescription className="text-left w-full">
+              Tutti i progressi compiuti nell'ordine <strong>verranno persi</strong>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annulla</AlertDialogCancel>
+          <AlertDialogFooter className="flex flex-row gap-2 sm:space-x-0">
+            <AlertDialogCancel className="flex-1 mt-0 sm:mt-0">Annulla</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleLogoutConfirm}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="flex-1"
+              variant="destructive"
             >
               Esci
             </AlertDialogAction>
