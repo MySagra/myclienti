@@ -5,7 +5,7 @@ export async function GET(
   { params }: { params: Promise<{ path: string[] }> }
 ) {
   const { path } = await params;
-  const apiUrl = process.env.MYSAGRA_API_URL;
+  const apiUrl = process.env.API_URL;
 
   if (!apiUrl) {
     return NextResponse.json(
@@ -18,7 +18,11 @@ export async function GET(
   const targetUrl = `${apiUrl}/uploads/${uploadPath}`;
 
   try {
-    const response = await fetch(targetUrl);
+    const response = await fetch(targetUrl, {
+      headers: {
+        "X-API-KEY": process.env.CLIENTI_API_KEY ?? '',
+      },
+    });
 
     if (!response.ok) {
       return new NextResponse(null, { status: response.status });

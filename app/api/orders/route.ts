@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const apiUrl = process.env.MYSAGRA_API_URL;
+    const apiUrl = process.env.API_URL;
     if (!apiUrl) {
       return NextResponse.json(
         { error: "API URL not configured" },
@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
       headers: {
         "Content-Type": "application/json",
         "X-Forwarded-For": clientIp,
+        "X-API-KEY": process.env.CLIENTI_API_KEY ?? '',
       },
       body: JSON.stringify(validationResult.data),
     });
