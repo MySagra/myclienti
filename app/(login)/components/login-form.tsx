@@ -49,13 +49,13 @@ export function LoginForm() {
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: savedUser.name,
-            table: requireTable ? savedUser.table : "0",
+            table: requireTable ? savedUser.table : "NO_TABLE_PRESET",
         }
     });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setName(values.name);
-        setTableNumber(requireTable ? (values.table ?? "0") : "0");
+        setTableNumber(requireTable ? (values.table ?? "NO_TABLE_PRESET") : "NO_TABLE_PRESET");
         sessionStorage.removeItem("mysagra-user");
         router.push("/menu");
     }
