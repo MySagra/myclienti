@@ -1,6 +1,8 @@
 import Header from "@/components/Header";
 import CategoryCard from "@/components/CategoryCard";
 import { getCategories } from "@/services/category.service";
+import { getBanners } from "@/services/banner.service";
+import { BannerCarousel } from "@/components/BannerCarousel";
 
 export const dynamic = 'force-dynamic';
 
@@ -20,12 +22,14 @@ export default async function Menu() {
     </div>
   );
 }
+
 async function MenuList() {
-  const categories = await getCategories();
+  const [categories, banners] = await Promise.all([getCategories(), getBanners()]);
   const sortedCategories = [...categories].sort((a, b) => a.position - b.position);
 
   return (
     <div className="grid gap-4 pb-8">
+      <BannerCarousel banners={banners} />
       {sortedCategories.map((category) => (
         <CategoryCard key={category.id} category={category} />
       ))}

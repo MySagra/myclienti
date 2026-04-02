@@ -45,11 +45,17 @@ const ConfirmationPage = () => {
       }
     }).then(async (res) => {
       if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          router.replace("/500");
+          return;
+        }
         console.error("Failed to create order:", await res.json());
       } else {
         const data = await res.json();
         setDisplayCode(data.displayCode);
       }
+    }).catch(() => {
+      router.replace("/500");
     });
   }, [])
 
