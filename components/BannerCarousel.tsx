@@ -242,7 +242,6 @@ interface BannerCarouselProps {
 export function BannerCarousel({ banners }: BannerCarouselProps) {
   const count = banners.length
   const [current, setCurrent] = useState(0)
-  const [paused, setPaused] = useState(false)
 
   // Transition state: non-null while a slide animation is active
   const [transition, setTransition] = useState<{
@@ -290,15 +289,15 @@ export function BannerCarousel({ banners }: BannerCarouselProps) {
     }, 5000)
   }, [count, clearAutoTimer])
 
-  // Start/stop auto-rotation based on pause state
+  // Start/stop auto-rotation
   useEffect(() => {
-    if (paused || count <= 1) {
+    if (count <= 1) {
       clearAutoTimer()
     } else {
       resetAutoTimer()
     }
     return clearAutoTimer
-  }, [paused, count, clearAutoTimer, resetAutoTimer])
+  }, [count, clearAutoTimer, resetAutoTimer])
 
   // ── Navigation — never blocked ──
   const goTo = (rawIndex: number) => {
@@ -339,7 +338,7 @@ export function BannerCarousel({ banners }: BannerCarouselProps) {
   const color = `#${banners[current].color}`
 
   return (
-    <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+    <div>
       <style>{`
         @keyframes banner-enter-right { from { transform: translateX(100%) } to { transform: translateX(0) } }
         @keyframes banner-enter-left  { from { transform: translateX(-100%) } to { transform: translateX(0) } }
@@ -439,7 +438,6 @@ export function BannerCarousel({ banners }: BannerCarouselProps) {
                       style={{
                         backgroundColor: dotColor,
                         animation: "banner-progress 5s linear forwards",
-                        animationPlayState: paused ? "paused" : "running",
                       }}
                     />
                   </>
