@@ -7,7 +7,7 @@ export async function getBanners(): Promise<Banner[]> {
 
   try {
     res = await fetch(`${process.env.API_URL}/v1/banners`, {
-      next: { tags: ['banners'], revalidate: 60 },
+      next: { tags: ['banners'], revalidate: 300 },
       headers: {
         'X-API-KEY': process.env.CLIENTI_API_KEY ?? '',
       },
