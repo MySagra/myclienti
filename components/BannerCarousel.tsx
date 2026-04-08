@@ -145,15 +145,64 @@ function CountdownTimer({ target, bannerColor }: { target: Date; bannerColor: st
   )
 }
 
+/* ── Image preloading hook ── */
+function usePreloadedImages(banners: Banner[]) {
+  const [loaded, setLoaded] = useState<Set<string>>(() => new Set())
+  const urlCacheRef = useRef<Map<string, HTMLImageElement>>(new Map())
+
+  useEffect(() => {
+    const newLoaded = new Set<string>()
+    const cache = urlCacheRef.current
+
+    banners.forEach((b) => {
+      if (!b.image) return
+      const url = `/api/proxy/uploads/banners/${b.image}`
+      // Already cached and complete
+      if (cache.has(url)) {
+        const img = cache.get(url)!
+        if (img.complete && img.naturalWidth > 0) {
+          newLoaded.add(url)
+        }
+        return
+      }
+      const img = new Image()
+      img.src = url
+      cache.set(url, img)
+      if (img.complete && img.naturalWidth > 0) {
+        newLoaded.add(url)
+      } else {
+        img.onload = () => {
+          setLoaded((prev) => {
+            const next = new Set(prev)
+            next.add(url)
+            return next
+          })
+        }
+      }
+    })
+
+    if (newLoaded.size > 0) {
+      setLoaded((prev) => {
+        const next = new Set(prev)
+        newLoaded.forEach((u) => next.add(u))
+        return next
+      })
+    }
+  }, [banners])
+
+  return loaded
+}
+
 /* ── Banner slide ── */
-function BannerSlide({ banner }: { banner: Banner }) {
+function BannerSlide({ banner, loadedImages }: { banner: Banner; loadedImages: Set<string> }) {
   const color = `#${banner.color}`
-  const hasImage = !!banner.image
+  const imgUrl = banner.image ? `/api/proxy/uploads/banners/${banner.image}` : null
+  const imageReady = imgUrl ? loadedImages.has(imgUrl) : false
 
   // Badge text adapts to card color; bottom text is always cream (over dark gradient)
   const badgeTxt = textFor(color)
 
-  const iconBtnStyle = hasImage
+  const iconBtnStyle = imgUrl
     ? { backgroundColor: `${color}cc`, color: badgeTxt }
     : { backgroundColor: "rgba(0,0,0,0.2)", color: CREAM }
 
@@ -165,11 +214,15 @@ function BannerSlide({ banner }: { banner: Banner }) {
 
   return (
     <div className="absolute inset-0" style={{ backgroundColor: color }}>
-      {hasImage && (
+      {imgUrl && (
         <img
-          src={`/api/proxy/uploads/banners/${banner.image}`}
+          src={imgUrl}
           alt={banner.title ?? "Banner"}
           className="absolute inset-0 w-full h-full object-cover"
+          style={{
+            opacity: imageReady ? 1 : 0,
+            transition: "opacity 0.3s ease",
+          }}
         />
       )}
 
@@ -242,6 +295,7 @@ interface BannerCarouselProps {
 export function BannerCarousel({ banners }: BannerCarouselProps) {
   const count = banners.length
   const [current, setCurrent] = useState(0)
+  const loadedImages = usePreloadedImages(banners)
 
   // Transition state: non-null while a slide animation is active
   const [transition, setTransition] = useState<{
@@ -356,7 +410,7 @@ export function BannerCarousel({ banners }: BannerCarouselProps) {
       >
         {/* Idle slide — always rendered, visible when no transition is active */}
         <div className="absolute inset-0 z-10">
-          <BannerSlide banner={banners[current]} />
+          <BannerSlide banner={banners[current]} loadedImages={loadedImages} />
         </div>
 
         {/* Transition overlay — keyed elements force fresh animations every time */}
@@ -368,7 +422,7 @@ export function BannerCarousel({ banners }: BannerCarouselProps) {
               className="absolute inset-0 z-[21]"
               style={{ animation: `banner-exit-${transition.direction} 0.38s ease-in-out forwards` }}
             >
-              <BannerSlide banner={banners[transition.from]} />
+              <BannerSlide banner={banners[transition.from]} loadedImages={loadedImages} />
             </div>
             {/* New slide animating in (on top) */}
             <div
@@ -376,7 +430,7 @@ export function BannerCarousel({ banners }: BannerCarouselProps) {
               className="absolute inset-0 z-[22]"
               style={{ animation: `banner-enter-${transition.direction} 0.38s ease-in-out forwards` }}
             >
-              <BannerSlide banner={banners[current]} />
+              <BannerSlide banner={banners[current]} loadedImages={loadedImages} />
             </div>
           </>
         )}

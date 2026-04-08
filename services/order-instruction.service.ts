@@ -6,7 +6,7 @@ export async function getOrderInstructions(): Promise<OrderInstruction[]> {
 
   try {
     res = await fetch(`${process.env.API_URL}/v1/order-instructions`, {
-      next: { tags: ['order-instructions'], revalidate: 300 },
+      next: { tags: ['order-instructions'], revalidate: 60 },
       headers: {
         'X-API-KEY': process.env.CLIENTI_API_KEY ?? '',
       },
