@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ChevronLeft, ChevronRight, Globe } from "lucide-react"
 import { Banner } from "@/schemas/banner"
 
@@ -145,59 +145,10 @@ function CountdownTimer({ target, bannerColor }: { target: Date; bannerColor: st
   )
 }
 
-/* ── Image preloading hook ── */
-function usePreloadedImages(banners: Banner[]) {
-  const [loaded, setLoaded] = useState<Set<string>>(() => new Set())
-  const urlCacheRef = useRef<Map<string, HTMLImageElement>>(new Map())
-
-  useEffect(() => {
-    const newLoaded = new Set<string>()
-    const cache = urlCacheRef.current
-
-    banners.forEach((b) => {
-      if (!b.image) return
-      const url = `/api/proxy/uploads/banners/${b.image}`
-      // Already cached and complete
-      if (cache.has(url)) {
-        const img = cache.get(url)!
-        if (img.complete && img.naturalWidth > 0) {
-          newLoaded.add(url)
-        }
-        return
-      }
-      const img = new Image()
-      img.src = url
-      cache.set(url, img)
-      if (img.complete && img.naturalWidth > 0) {
-        newLoaded.add(url)
-      } else {
-        img.onload = () => {
-          setLoaded((prev) => {
-            const next = new Set(prev)
-            next.add(url)
-            return next
-          })
-        }
-      }
-    })
-
-    if (newLoaded.size > 0) {
-      setLoaded((prev) => {
-        const next = new Set(prev)
-        newLoaded.forEach((u) => next.add(u))
-        return next
-      })
-    }
-  }, [banners])
-
-  return loaded
-}
-
 /* ── Banner slide ── */
-function BannerSlide({ banner, loadedImages }: { banner: Banner; loadedImages: Set<string> }) {
+function BannerSlide({ banner }: { banner: Banner }) {
   const color = `#${banner.color}`
   const imgUrl = banner.image ? `/api/proxy/uploads/banners/${banner.image}` : null
-  const imageReady = imgUrl ? loadedImages.has(imgUrl) : false
 
   // Badge text adapts to card color; bottom text is always cream (over dark gradient)
   const badgeTxt = textFor(color)
@@ -215,14 +166,13 @@ function BannerSlide({ banner, loadedImages }: { banner: Banner; loadedImages: S
   return (
     <div className="absolute inset-0" style={{ backgroundColor: color }}>
       {imgUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={imgUrl}
           alt={banner.title ?? "Banner"}
           className="absolute inset-0 w-full h-full object-cover"
-          style={{
-            opacity: imageReady ? 1 : 0,
-            transition: "opacity 0.3s ease",
-          }}
+          loading="eager"
+          decoding="async"
         />
       )}
 
@@ -287,27 +237,36 @@ interface BannerCarouselProps {
 }
 
 /**
- * Carousel with NO animation lock — user clicks are never blocked.
- * Each navigation produces a fresh `transition` object with a unique `key`,
- * which forces React to unmount old animation divs and mount new ones,
- * guaranteeing CSS animations always restart correctly.
+ * Strip carousel with infinite cloning.
+ * Layout: [clone-of-last, slide0, slide1, ..., slideN-1, clone-of-first]
+ *
+ * All BannerSlide components live permanently in the DOM — their <Image>
+ * elements never unmount, so the browser cache is hit on every transition
+ * and there is zero flicker.
+ *
+ * Wrapping is handled by animating into a clone (visually identical to the
+ * real target), then instantly "teleporting" the strip to the real position
+ * with no transition. The jump is invisible because content is identical.
  */
 export function BannerCarousel({ banners }: BannerCarouselProps) {
   const count = banners.length
-  const [current, setCurrent] = useState(0)
-  const loadedImages = usePreloadedImages(banners)
 
-  // Transition state: non-null while a slide animation is active
-  const [transition, setTransition] = useState<{
-    from: number
-    direction: "right" | "left"
-    key: number
-  } | null>(null)
+  // [clone-of-last, ...real slides..., clone-of-first]
+  const cloned = useMemo(() => {
+    if (count <= 1) return [...banners]
+    return [banners[count - 1], ...banners, banners[0]]
+  }, [banners, count])
 
-  // Refs for values that need to be read inside intervals
-  const currentRef = useRef(current)
-  currentRef.current = current
-  const keyCounter = useRef(0)
+  const total = cloned.length
+
+  // offset: integer index into `cloned`. For count > 1:
+  //   0          = clone-of-last  → maps to real index count-1
+  //   1..count   = real slides    → maps to real index offset-1
+  //   count+1    = clone-of-first → maps to real index 0
+  const [offset, setOffset] = useState(count > 1 ? 1 : 0)
+  const [animate, setAnimate] = useState(false)
+  const offsetRef = useRef(offset)
+  const navCountRef = useRef(0)
   const autoTimer = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Touch refs
@@ -316,14 +275,22 @@ export function BannerCarousel({ banners }: BannerCarouselProps) {
   const touchEndX = useRef(0)
   const isHorizontalSwipe = useRef(false)
 
-  // ── Clear transition overlay after animation duration ──
-  useEffect(() => {
-    if (!transition) return
-    const id = setTimeout(() => setTransition(null), 420)
-    return () => clearTimeout(id)
-  }, [transition?.key]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Real current index (0-based into `banners`)
+  const current = useMemo(() => {
+    if (count <= 1) return 0
+    if (offset <= 0) return count - 1          // clone-of-last
+    if (offset >= count + 1) return 0          // clone-of-first
+    return offset - 1
+  }, [count, offset])
 
-  // ── Auto-rotation timer management ──
+  // Low-level navigate: update offset with or without CSS transition
+  const navigate = useCallback((newOffset: number, withAnimation: boolean) => {
+    offsetRef.current = newOffset
+    setAnimate(withAnimation)
+    setOffset(newOffset)
+    if (withAnimation) navCountRef.current++
+  }, [])
+
   const clearAutoTimer = useCallback(() => {
     if (autoTimer.current) {
       clearInterval(autoTimer.current)
@@ -335,71 +302,73 @@ export function BannerCarousel({ banners }: BannerCarouselProps) {
     clearAutoTimer()
     if (count <= 1) return
     autoTimer.current = setInterval(() => {
-      const cur = currentRef.current
-      const next = (cur + 1) % count
-      const key = ++keyCounter.current
-      setCurrent(next)
-      setTransition({ from: cur, direction: "right", key })
+      // Always increment — if at clone-of-first it will trigger the teleport
+      navigate(offsetRef.current + 1, true)
     }, 5000)
-  }, [count, clearAutoTimer])
+  }, [count, clearAutoTimer, navigate])
 
-  // Start/stop auto-rotation
   useEffect(() => {
-    if (count <= 1) {
-      clearAutoTimer()
-    } else {
-      resetAutoTimer()
-    }
+    if (count <= 1) clearAutoTimer()
+    else resetAutoTimer()
     return clearAutoTimer
   }, [count, clearAutoTimer, resetAutoTimer])
 
-  // ── Navigation — never blocked ──
-  const goTo = (rawIndex: number) => {
-    const cur = currentRef.current
-    const normalized = ((rawIndex % count) + count) % count
-    if (normalized === cur) return
-    const dir: "right" | "left" = rawIndex > cur ? "right" : "left"
-    const key = ++keyCounter.current
-    currentRef.current = normalized // update ref immediately for rapid clicks
-    setCurrent(normalized)
-    setTransition({ from: cur, direction: dir, key })
-    resetAutoTimer() // restart 5s countdown
-  }
+  const goNext = useCallback(() => {
+    const next = Math.min(offsetRef.current + 1, count + 1)
+    if (next !== offsetRef.current) navigate(next, true)
+    resetAutoTimer()
+  }, [count, navigate, resetAutoTimer])
 
-  // ── Touch / swipe handlers ──
+  const goPrev = useCallback(() => {
+    const next = Math.max(offsetRef.current - 1, 0)
+    if (next !== offsetRef.current) navigate(next, true)
+    resetAutoTimer()
+  }, [navigate, resetAutoTimer])
+
+  const goToReal = useCallback((realIndex: number) => {
+    const normalized = ((realIndex % count) + count) % count
+    navigate(normalized + 1, true)
+    resetAutoTimer()
+  }, [count, navigate, resetAutoTimer])
+
+  // After CSS transition ends: if we landed on a clone, teleport to the
+  // matching real slide (no animation — visually identical, no flash).
+  const handleTransitionEnd = useCallback(() => {
+    const cur = offsetRef.current
+    if (cur >= count + 1) navigate(1, false)     // clone-of-first → real first
+    else if (cur <= 0)    navigate(count, false)  // clone-of-last  → real last
+    else                  setAnimate(false)
+  }, [count, navigate])
+
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX
     touchStartY.current = e.touches[0].clientY
-    touchEndX.current = e.touches[0].clientX
+    touchEndX.current   = e.touches[0].clientX
     isHorizontalSwipe.current = false
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
     touchEndX.current = e.touches[0].clientX
-    const diffX = Math.abs(e.touches[0].clientX - touchStartX.current)
-    const diffY = Math.abs(e.touches[0].clientY - touchStartY.current)
-    if (diffX > diffY && diffX > 10) isHorizontalSwipe.current = true
+    const dx = Math.abs(e.touches[0].clientX - touchStartX.current)
+    const dy = Math.abs(e.touches[0].clientY - touchStartY.current)
+    if (dx > dy && dx > 10) isHorizontalSwipe.current = true
   }
 
   const handleTouchEnd = () => {
     if (!isHorizontalSwipe.current) return
     const diff = touchStartX.current - touchEndX.current
-    if (Math.abs(diff) > 50) diff > 0 ? goTo(currentRef.current + 1) : goTo(currentRef.current - 1)
+    if (Math.abs(diff) > 50) diff > 0 ? goNext() : goPrev()
   }
 
   if (count === 0) return null
 
   const color = `#${banners[current].color}`
+  // translateX: move strip so that `offset` slot is fully visible
+  const translateX = total > 0 ? -(offset / total) * 100 : 0
 
   return (
     <div>
-      <style>{`
-        @keyframes banner-enter-right { from { transform: translateX(100%) } to { transform: translateX(0) } }
-        @keyframes banner-enter-left  { from { transform: translateX(-100%) } to { transform: translateX(0) } }
-        @keyframes banner-exit-right  { from { transform: translateX(0) } to { transform: translateX(-100%) } }
-        @keyframes banner-exit-left   { from { transform: translateX(0) } to { transform: translateX(100%) } }
-        @keyframes banner-progress    { from { width: 0% } to { width: 100% } }
-      `}</style>
+      <style>{`@keyframes banner-progress { from { width: 0% } to { width: 100% } }`}</style>
 
       {/* Card */}
       <div
@@ -408,38 +377,36 @@ export function BannerCarousel({ banners }: BannerCarouselProps) {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Idle slide — always rendered, visible when no transition is active */}
-        <div className="absolute inset-0 z-10">
-          <BannerSlide banner={banners[current]} loadedImages={loadedImages} />
+        {/*
+          Horizontal strip — ALL slides always in DOM.
+          Images never unmount → no flicker on transition.
+        */}
+        <div
+          className="flex h-full"
+          style={{
+            width: `${total * 100}%`,
+            transform: `translateX(${translateX}%)`,
+            transition: animate ? "transform 0.38s ease-in-out" : "none",
+            willChange: "transform",
+          }}
+          onTransitionEnd={handleTransitionEnd}
+        >
+          {cloned.map((banner, i) => (
+            <div
+              key={`${banner.id}-${i}`}
+              className="relative flex-shrink-0 h-full"
+              style={{ width: `${100 / total}%` }}
+            >
+              <BannerSlide banner={banner} />
+            </div>
+          ))}
         </div>
 
-        {/* Transition overlay — keyed elements force fresh animations every time */}
-        {transition && (
-          <>
-            {/* Old slide animating out */}
-            <div
-              key={`exit-${transition.key}`}
-              className="absolute inset-0 z-[21]"
-              style={{ animation: `banner-exit-${transition.direction} 0.38s ease-in-out forwards` }}
-            >
-              <BannerSlide banner={banners[transition.from]} loadedImages={loadedImages} />
-            </div>
-            {/* New slide animating in (on top) */}
-            <div
-              key={`enter-${transition.key}`}
-              className="absolute inset-0 z-[22]"
-              style={{ animation: `banner-enter-${transition.direction} 0.38s ease-in-out forwards` }}
-            >
-              <BannerSlide banner={banners[current]} loadedImages={loadedImages} />
-            </div>
-          </>
-        )}
-
-        {/* Prev/Next buttons — always on top */}
+        {/* Prev / Next buttons */}
         {count > 1 && (
           <>
             <button
-              onClick={() => goTo(currentRef.current - 1)}
+              onClick={goPrev}
               className="absolute left-2 top-1/2 -translate-y-1/2 z-30 rounded-full p-1.5"
               style={{ backgroundColor: `${color}cc` }}
               aria-label="Banner precedente"
@@ -447,7 +414,7 @@ export function BannerCarousel({ banners }: BannerCarouselProps) {
               <ChevronLeft className="w-4 h-4 text-white" />
             </button>
             <button
-              onClick={() => goTo(currentRef.current + 1)}
+              onClick={goNext}
               className="absolute right-2 top-1/2 -translate-y-1/2 z-30 rounded-full p-1.5"
               style={{ backgroundColor: `${color}cc` }}
               aria-label="Banner successivo"
@@ -458,7 +425,7 @@ export function BannerCarousel({ banners }: BannerCarouselProps) {
         )}
       </div>
 
-      {/* Indicators: active = long pill, inactive = small dot */}
+      {/* Dot indicators */}
       {count > 1 && (
         <div className="flex justify-center items-center gap-1.5 mt-3">
           {banners.map((b, i) => {
@@ -467,7 +434,7 @@ export function BannerCarousel({ banners }: BannerCarouselProps) {
             return (
               <button
                 key={b.id}
-                onClick={() => goTo(i)}
+                onClick={() => goToReal(i)}
                 className="relative rounded-full overflow-hidden p-0 border-0 cursor-pointer"
                 style={{
                   height: 6,
@@ -480,14 +447,12 @@ export function BannerCarousel({ banners }: BannerCarouselProps) {
               >
                 {isActive && (
                   <>
-                    {/* Track background */}
                     <div
                       className="absolute inset-0 rounded-full"
                       style={{ backgroundColor: "color-mix(in srgb, var(--muted-foreground) 30%, transparent)" }}
                     />
-                    {/* Progress fill */}
                     <div
-                      key={`prog-${i}-${current}-${keyCounter.current}`}
+                      key={`prog-${i}-${navCountRef.current}`}
                       className="absolute left-0 top-0 h-full rounded-full"
                       style={{
                         backgroundColor: dotColor,
