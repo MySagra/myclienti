@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
@@ -15,40 +15,55 @@ import {
 } from "@/components/ui/drawer";
 import type { OrderInstruction } from "@/schemas/order-instruction";
 
-/** Lightweight inline-markdown renderer (bold, italic, links, code) */
+/**
+ * Lightweight inline-markdown renderer that supports **nested** formatting.
+ * Supported markers: **bold**, *italic*, __underline__, ~~strikethrough~~
+ */
 function InlineMarkdown({ text }: { text: string }) {
-  // Regex that captures: [link](url), **bold**, *italic*, `code`
-  const parts = text.split(/(\[.*?\]\(.*?\)|\*\*.*?\*\*|\*.*?\*|`.*?`)/g);
+  const elements: ReactNode[] = [];
+  const active = new Set<string>();
+  let buffer = "";
+  let key = 0;
 
-  return (
-    <>
-      {parts.map((part, i) => {
-        // Link: [text](url)
-        const linkMatch = part.match(/^\[(.*?)\]\((.*?)\)$/);
-        if (linkMatch) {
-          return (
-            <a key={i} href={linkMatch[2]} target="_blank" rel="noopener noreferrer"
-              className="text-primary underline underline-offset-2">
-              {linkMatch[1]}
-            </a>
-          );
-        }
-        // Bold: **text**
-        if (part.startsWith("**") && part.endsWith("**")) {
-          return <strong key={i}>{part.slice(2, -2)}</strong>;
-        }
-        // Italic: *text*
-        if (part.startsWith("*") && part.endsWith("*")) {
-          return <em key={i}>{part.slice(1, -1)}</em>;
-        }
-        // Code: `text`
-        if (part.startsWith("`") && part.endsWith("`")) {
-          return <code key={i} className="bg-muted px-1 py-0.5 rounded text-sm">{part.slice(1, -1)}</code>;
-        }
-        return <span key={i}>{part}</span>;
-      })}
-    </>
-  );
+  /** Flush the text buffer, wrapping it with all currently active styles */
+  const flush = () => {
+    if (!buffer) return;
+    let el: ReactNode = buffer;
+    if (active.has("**")) el = <strong>{el}</strong>;
+    if (active.has("*"))  el = <em>{el}</em>;
+    if (active.has("__")) el = <u>{el}</u>;
+    if (active.has("~~")) el = <s>{el}</s>;
+    elements.push(<span key={key++}>{el}</span>);
+    buffer = "";
+  };
+
+  let i = 0;
+  while (i < text.length) {
+    // Two-char markers first: **, __, ~~
+    if (i + 1 < text.length) {
+      const two = text.slice(i, i + 2);
+      if (two === "**" || two === "__" || two === "~~") {
+        flush();
+        if (active.has(two)) active.delete(two);
+        else active.add(two);
+        i += 2;
+        continue;
+      }
+    }
+    // Single-char marker: *
+    if (text[i] === "*") {
+      flush();
+      if (active.has("*")) active.delete("*");
+      else active.add("*");
+      i += 1;
+      continue;
+    }
+    buffer += text[i];
+    i++;
+  }
+  flush();
+
+  return <>{elements}</>;
 }
 
 interface ConfirmationContentProps {
