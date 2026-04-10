@@ -5,7 +5,7 @@ export async function getCategories(): Promise<Category[]> {
   let res: Response;
 
   try {
-    res = await fetch(`${process.env.API_URL}/v1/categories?available=true&include=foods`, {
+    res = await fetch(`${process.env.API_URL}/v1/categories?available=true&include=foods.ingredients&foodsAvailable=true`, {
       next: { tags: ['categories'], revalidate: 60 },
       headers: {
         'X-API-KEY': process.env.CLIENTI_API_KEY ?? '',
