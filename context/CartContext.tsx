@@ -67,7 +67,7 @@ export const CartProvider = ({ children, requireTable }: { children: ReactNode; 
   useEffect(() => {
     const stored = getStoredCart();
     setNameState(stored.name);
-    setTableNumberState(requireTable ? stored.tableNumber : "0");
+    setTableNumberState(requireTable ? stored.tableNumber : "NO_TABLE_PRESET");
     setItems(stored.items);
     setDisplayCodeState(stored.displayCode || "");
     setIsHydrated(true);

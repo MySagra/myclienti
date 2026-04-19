@@ -24,6 +24,7 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
+ENV DOCKER_BUILD=1
 RUN pnpm run build
 
 # Production image, copy all the files and run next
@@ -50,9 +51,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
-EXPOSE 3000
+EXPOSE 3034
 
-ENV PORT=3000
+ENV PORT=3034
 # set hostname to localhost
 ENV HOSTNAME="0.0.0.0"
 

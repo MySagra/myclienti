@@ -53,7 +53,7 @@ A modern and responsive web application for customer order management during fes
    
    Edit `.env.local` with your values:
    ```env
-   MYSAGRA_API_URL=https://your-api-url.com
+   API_URL=https://your-api-url.com
    ```
 
 4. **Start the development server**
@@ -75,7 +75,7 @@ A modern and responsive web application for customer order management during fes
    
    Create a `.env` file in the project root:
    ```env
-   MYSAGRA_API_URL=https://your-api-url.com
+   API_URL=https://your-api-url.com
    ```
 
 3. **Start with Docker Compose**
@@ -83,7 +83,7 @@ A modern and responsive web application for customer order management during fes
    docker compose up -d
    ```
 
-4. **Access the application** at [http://localhost:3030](http://localhost:3030)
+4. **Access the application** at [http://localhost:3034](http://localhost:3034)
 
 ## ⚙️ Configuration
 
@@ -91,7 +91,7 @@ A modern and responsive web application for customer order management during fes
 
 | Variable | Description | Required | Default |
 |----------|-------------|----------|---------|
-| `MYSAGRA_API_URL` | MySagra API backend URL | Yes | - |
+| `API_URL` | MySagra API backend URL | Yes | - |
 | `NODE_ENV` | Runtime environment | No | `production` |
 
 ### Production Build
@@ -103,7 +103,7 @@ pnpm start
 
 # Docker build
 docker build -t mysagra-customer-app .
-docker run -p 3000:3000 -e MYSAGRA_API_URL=https://api.example.com mysagra-customer-app
+docker run -p 3000:3000 -e API_URL=https://api.example.com mysagra-customer-app
 ```
 
 ## 🛠️ Tech Stack
@@ -177,7 +177,7 @@ docker compose logs -f myclienti  # View logs
 
 The project is configured with GitHub Actions for automatic deployment to GitHub Container Registry on every release.
 
-1. **Configure the secret** `MYSAGRA_API_URL` in repository settings
+1. **Configure the secret** `API_URL` in repository settings
 2. **Create a release** to trigger the automatic build
 3. **Pull the image**:
    ```bash
