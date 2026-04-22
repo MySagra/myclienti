@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ShoppingCart, LogOut } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,10 +16,35 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+interface FooterLink {
+  label: string;
+  url: string;
+}
+
+const REFETCH_INTERVAL = 5 * 60 * 1000; // 5 minutes
+
 const Header = () => {
   const { totalItems, totalPrice, clearCart } = useCart();
   const router = useRouter();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const [footerLinks, setFooterLinks] = useState<FooterLink[]>([]);
+
+  const fetchFooterLinks = useCallback(async () => {
+    try {
+      const callbackUrl = encodeURIComponent(window.location.href);
+      const res = await fetch(`/api/footer-links?callback=${callbackUrl}`);
+      const data = await res.json();
+      setFooterLinks(data.links || []);
+    } catch (error) {
+      console.error("Failed to fetch footer links:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchFooterLinks();
+    const interval = setInterval(fetchFooterLinks, REFETCH_INTERVAL);
+    return () => clearInterval(interval);
+  }, [fetchFooterLinks]);
 
   const handleLogoutConfirm = () => {
     clearCart();
@@ -83,15 +108,38 @@ const Header = () => {
               Tutti i progressi compiuti nell'ordine <strong>verranno persi</strong>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex flex-row gap-2 sm:space-x-0">
-            <AlertDialogCancel className="flex-1 mt-0 sm:mt-0">Annulla</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleLogoutConfirm}
-              className="flex-1"
-              variant="destructive"
-            >
-              Esci
-            </AlertDialogAction>
+
+          <AlertDialogFooter className="flex flex-col gap-2 sm:space-x-0">
+            <div className="flex flex-row gap-2 sm:space-x-0">
+              <AlertDialogCancel className="flex-1 mt-0 sm:mt-0">Annulla</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleLogoutConfirm}
+                className="flex-1"
+                variant="destructive"
+              >
+                Esci
+              </AlertDialogAction>
+            </div>
+
+            {footerLinks.length > 0 && (
+              <div className="pt-3 px-0">
+                <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
+                  {footerLinks.map((link, idx) => (
+                    <div key={link.label} className="flex items-center gap-3">
+                      <Link
+                        href={link.url}
+                        className="hover:text-foreground transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                      {idx < footerLinks.length - 1 && (
+                        <span className="text-border">·</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
