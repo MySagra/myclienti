@@ -95,52 +95,95 @@ function FlipSeparator({ dark }: { dark: boolean }) {
   )
 }
 
+/* ── Date utilities ── */
+function addMonthsToDate(date: Date, monthsToAdd: number): Date {
+  const expectedMonth = (date.getMonth() + monthsToAdd) % 12
+  const expectedYear = date.getFullYear() + Math.floor((date.getMonth() + monthsToAdd) / 12)
+  
+  const d = new Date(date.getTime())
+  d.setMonth(date.getMonth() + monthsToAdd)
+  
+  if (d.getMonth() !== expectedMonth) {
+    d.setFullYear(expectedYear, expectedMonth + 1, 0)
+  }
+  return d
+}
+
 /* ── Countdown timer ── */
 function CountdownTimer({ target, bannerColor }: { target: Date; bannerColor: string }) {
-  const [now, setNow] = useState(() => new Date())
+  const [now, setNow] = useState<Date | null>(null)
 
   useEffect(() => {
+    setNow(new Date())
     const id = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(id)
   }, [])
 
-  const diff = Math.max(0, target.getTime() - now.getTime())
-  if (diff === 0) return null
+  if (!now) return null // Render only on client to avoid hydration mismatch with timezones
 
-  const totalSec = Math.floor(diff / 1000)
+  const diffMs = Math.max(0, target.getTime() - now.getTime())
+  if (diffMs === 0) return null
+
+  let months = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth())
+  let tempNow = addMonthsToDate(now, months)
+  if (tempNow.getTime() > target.getTime()) {
+    months--
+    tempNow = addMonthsToDate(now, months)
+  }
+
+  const remainingMs = Math.max(0, target.getTime() - tempNow.getTime())
+  const totalSec = Math.floor(remainingMs / 1000)
   const days = Math.floor(totalSec / 86400)
   const hours = Math.floor((totalSec % 86400) / 3600)
   const minutes = Math.floor((totalSec % 3600) / 60)
-  const seconds = totalSec % 60
 
-  const showDays = days > 0
+  const showMonths = months > 0
   const dark = isDark(bannerColor)
+
+  const dateFormatted = new Intl.DateTimeFormat('it-IT', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+  }).format(target)
 
   return (
     <div
-      className="flex items-start gap-[3px] rounded-xl px-2.5 py-2"
+      className="flex flex-col items-center gap-1.5 rounded-xl px-2.5 py-2"
       style={{
         backgroundColor: bannerColor,
         boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
       }}
     >
-      {showDays ? (
-        <>
-          <FlipGroup val={days} label="giorni" dark={dark} />
-          <FlipSeparator dark={dark} />
-          <FlipGroup val={hours} label="ore" dark={dark} />
-          <FlipSeparator dark={dark} />
-          <FlipGroup val={minutes} label="min" dark={dark} />
-        </>
-      ) : (
-        <>
-          <FlipGroup val={hours} label="ore" dark={dark} />
-          <FlipSeparator dark={dark} />
-          <FlipGroup val={minutes} label="min" dark={dark} />
-          <FlipSeparator dark={dark} />
-          <FlipGroup val={seconds} label="sec" dark={dark} />
-        </>
-      )}
+      <div 
+        className="text-[10px] font-bold uppercase tracking-wider text-center"
+        style={{ color: subTextFor(bannerColor) }}
+      >
+        {dateFormatted.replace(',', ' -')}
+      </div>
+      <div className="flex items-start gap-[3px]">
+        {showMonths ? (
+          <>
+            <FlipGroup val={months} label="mesi" dark={dark} />
+            <FlipSeparator dark={dark} />
+            <FlipGroup val={days} label="giorni" dark={dark} />
+            <FlipSeparator dark={dark} />
+            <FlipGroup val={hours} label="ore" dark={dark} />
+            <FlipSeparator dark={dark} />
+            <FlipGroup val={minutes} label="min" dark={dark} />
+          </>
+        ) : (
+          <>
+            <FlipGroup val={days} label="giorni" dark={dark} />
+            <FlipSeparator dark={dark} />
+            <FlipGroup val={hours} label="ore" dark={dark} />
+            <FlipSeparator dark={dark} />
+            <FlipGroup val={minutes} label="min" dark={dark} />
+          </>
+        )}
+      </div>
     </div>
   )
 }
