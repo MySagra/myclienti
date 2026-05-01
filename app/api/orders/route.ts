@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { CreateOrderSchema } from "@/schemas/order";
 
 export async function POST(request: NextRequest) {
@@ -42,6 +43,11 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
 
     if (!response.ok) {
+      if (response.status >= 500) {
+        revalidatePath("/");
+        revalidatePath("/menu");
+        revalidatePath("/confirmation");
+      }
       return NextResponse.json(
         { error: data.message || "Failed to create order", details: data },
         { status: response.status }

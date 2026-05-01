@@ -16,13 +16,16 @@ export async function getCategories(): Promise<Category[]> {
   }
 
   if (!res.ok) {
+    if (res.status === 500) {
+      redirect('/500');
+    }
     if (res.status === 401 || res.status === 403) {
       redirect('/500');
     }
     if (res.status === 404) {
        return [];
     }
-    throw new Error(`Failed to fetch categories: ${res.statusText}`);
+    redirect('/500');
   }
 
   return res.json();
