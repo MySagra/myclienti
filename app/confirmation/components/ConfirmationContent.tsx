@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import { clearAllCache } from "@/app/actions/cache";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ClipboardList } from "lucide-react";
 import { OrderLoading } from "./orderLoading";
@@ -101,16 +102,14 @@ const ConfirmationContent = ({ instructions }: ConfirmationContentProps) => {
       }
     }).then(async (res) => {
       if (!res.ok) {
-        if (res.status === 401 || res.status === 403) {
-          router.replace("/500");
-          return;
-        }
-        console.error("Failed to create order:", await res.json());
-      } else {
-        const data = await res.json();
-        setDisplayCode(data.displayCode);
+        await clearAllCache();
+        router.replace("/500");
+        return;
       }
-    }).catch(() => {
+      const data = await res.json();
+      setDisplayCode(data.displayCode);
+    }).catch(async () => {
+      await clearAllCache();
       router.replace("/500");
     });
   }, [])

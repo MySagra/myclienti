@@ -17,10 +17,10 @@ export async function getBanners(): Promise<Banner[]> {
   }
 
   if (!res.ok) {
-    if (res.status === 401 || res.status === 403) {
+    if (res.status === 401 || res.status === 403 || res.status === 500) {
       redirect('/500')
     }
-    return []
+    redirect('/500')
   }
 
   const data = await res.json()
