@@ -95,20 +95,6 @@ function FlipSeparator({ dark }: { dark: boolean }) {
   )
 }
 
-/* ── Date utilities ── */
-function addMonthsToDate(date: Date, monthsToAdd: number): Date {
-  const expectedMonth = (date.getMonth() + monthsToAdd) % 12
-  const expectedYear = date.getFullYear() + Math.floor((date.getMonth() + monthsToAdd) / 12)
-  
-  const d = new Date(date.getTime())
-  d.setMonth(date.getMonth() + monthsToAdd)
-  
-  if (d.getMonth() !== expectedMonth) {
-    d.setFullYear(expectedYear, expectedMonth + 1, 0)
-  }
-  return d
-}
-
 /* ── Countdown timer ── */
 function CountdownTimer({ target, bannerColor }: { target: Date; bannerColor: string }) {
   const [now, setNow] = useState<Date | null>(null)
@@ -124,20 +110,12 @@ function CountdownTimer({ target, bannerColor }: { target: Date; bannerColor: st
   const diffMs = Math.max(0, target.getTime() - now.getTime())
   if (diffMs === 0) return null
 
-  let months = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth())
-  let tempNow = addMonthsToDate(now, months)
-  if (tempNow.getTime() > target.getTime()) {
-    months--
-    tempNow = addMonthsToDate(now, months)
-  }
-
-  const remainingMs = Math.max(0, target.getTime() - tempNow.getTime())
-  const totalSec = Math.floor(remainingMs / 1000)
+  const totalSec = Math.floor(diffMs / 1000)
   const days = Math.floor(totalSec / 86400)
   const hours = Math.floor((totalSec % 86400) / 3600)
   const minutes = Math.floor((totalSec % 3600) / 60)
+  const seconds = totalSec % 60
 
-  const showMonths = months > 0
   const dark = isDark(bannerColor)
 
   const dateFormatted = new Intl.DateTimeFormat('it-IT', {
@@ -157,30 +135,30 @@ function CountdownTimer({ target, bannerColor }: { target: Date; bannerColor: st
         boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
       }}
     >
-      <div 
+      <div
         className="text-[10px] font-bold uppercase tracking-wider text-center"
         style={{ color: subTextFor(bannerColor) }}
       >
         {dateFormatted.replace(',', ' -')}
       </div>
       <div className="flex items-start gap-[3px]">
-        {showMonths ? (
+        {days > 0 ? (
           <>
-            <FlipGroup val={months} label="mesi" dark={dark} />
-            <FlipSeparator dark={dark} />
             <FlipGroup val={days} label="giorni" dark={dark} />
             <FlipSeparator dark={dark} />
+            <FlipGroup val={hours} label="ore" dark={dark} />
+          </>
+        ) : hours > 0 ? (
+          <>
             <FlipGroup val={hours} label="ore" dark={dark} />
             <FlipSeparator dark={dark} />
             <FlipGroup val={minutes} label="min" dark={dark} />
           </>
         ) : (
           <>
-            <FlipGroup val={days} label="giorni" dark={dark} />
-            <FlipSeparator dark={dark} />
-            <FlipGroup val={hours} label="ore" dark={dark} />
-            <FlipSeparator dark={dark} />
             <FlipGroup val={minutes} label="min" dark={dark} />
+            <FlipSeparator dark={dark} />
+            <FlipGroup val={seconds} label="sec" dark={dark} />
           </>
         )}
       </div>
@@ -219,7 +197,9 @@ function BannerSlide({ banner }: { banner: Banner }) {
         />
       )}
 
-      <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
+      {(banner.title || banner.description) && (
+        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
+      )}
 
       {/* Top bar */}
       <div className="absolute top-0 left-0 right-0 z-10 flex items-start justify-between p-3">
@@ -415,7 +395,7 @@ export function BannerCarousel({ banners }: BannerCarouselProps) {
 
       {/* Card */}
       <div
-        className="relative rounded-md overflow-hidden shadow-sm h-[352px]"
+        className="relative rounded-md overflow-hidden shadow-sm aspect-15/11 w-full"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -437,7 +417,7 @@ export function BannerCarousel({ banners }: BannerCarouselProps) {
           {cloned.map((banner, i) => (
             <div
               key={`${banner.id}-${i}`}
-              className="relative flex-shrink-0 h-full"
+              className="relative shrink-0 h-full"
               style={{ width: `${100 / total}%` }}
             >
               <BannerSlide banner={banner} />
