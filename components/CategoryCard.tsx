@@ -15,7 +15,7 @@ const CategoryCard = ({ category }: CategoryCardProps) => {
   return (
     <Link href={`/menu/${encodeURIComponent(category.name)}`} className="block group">
       <div className="bg-card rounded-md overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
-        <div className="h-32 bg-muted overflow-hidden">
+        <div className="aspect-15/4 bg-muted overflow-hidden">
           {category.image ? (
             <img
               src={`/api/proxy/uploads/categories/${getImageFilename(category.image)}`}
