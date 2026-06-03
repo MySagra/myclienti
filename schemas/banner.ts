@@ -6,13 +6,16 @@ export const BannerSchema = z.object({
   id: z.string(),
   label: z.string(),
   type: BannerTypeSchema,
+  position: z.number().default(0),
   title: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   website: z.string().nullable().optional(),
   facebook: z.string().nullable().optional(),
   instagram: z.string().nullable().optional(),
+  telephone: z.string().nullable().optional(),
   color: z.string(),
-  dateTime: z.coerce.date().nullable().optional(),
+  startsAt: z.coerce.date().nullable().optional(),
+  endsAt: z.coerce.date().nullable().optional(),
   image: z.string().nullable().optional(),
 })
 
