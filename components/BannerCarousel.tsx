@@ -282,6 +282,7 @@ export function BannerCarousel({ banners: rawBanners }: BannerCarouselProps) {
   const banners = useMemo(() => {
     const now = Date.now()
     return rawBanners
+      .filter(b => b.visibleFrom.getTime() <= now)
       .filter(b => b.type !== "EVENT" || !b.endsAt || new Date(b.endsAt).getTime() > now)
       .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
   }, [rawBanners])

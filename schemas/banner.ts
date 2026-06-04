@@ -14,6 +14,7 @@ export const BannerSchema = z.object({
   instagram: z.string().nullable().optional(),
   telephone: z.string().nullable().optional(),
   color: z.string(),
+  visibleFrom: z.preprocess(v => v ?? 0, z.coerce.date()),
   startsAt: z.coerce.date().nullable().optional(),
   endsAt: z.coerce.date().nullable().optional(),
   image: z.string().nullable().optional(),
