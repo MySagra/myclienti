@@ -34,7 +34,7 @@ export function FoodItemCard({ food }: FoodItemCardProps) {
         )}
         {hasDescription && (
           <p className="text-sm text-muted-foreground">
-            Descrizione: {isExpanded || !isLongDesc ? food.description : `${food.description!.slice(0, 60).trim()}`}
+            {hasIngredients ? "Descrizione: " : ""}{isExpanded || !isLongDesc ? food.description : `${food.description!.slice(0, 60).trim()}`}
             {!isExpanded && isLongDesc && (
               <button
                 onClick={() => setIsExpanded(true)}

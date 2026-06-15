@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { ChevronLeft, ChevronRight, Globe } from "lucide-react"
+import { ChevronLeft, ChevronRight, Globe, Phone } from "lucide-react"
 import { Banner } from "@/schemas/banner"
 
 function FacebookIcon({ className }: { className?: string }) {
@@ -179,8 +179,8 @@ function BannerSlide({ banner }: { banner: Banner }) {
     : { backgroundColor: "rgba(0,0,0,0.2)", color: CREAM }
 
   const eventDate =
-    banner.type === "EVENT" && banner.dateTime
-      ? new Date(banner.dateTime)
+    banner.type === "EVENT" && banner.startsAt
+      ? new Date(banner.startsAt)
       : null
   const showCountdown = eventDate && eventDate.getTime() > Date.now()
 
@@ -238,6 +238,13 @@ function BannerSlide({ banner }: { banner: Banner }) {
                 <InstagramIcon className="w-4 h-4" />
               </a>
             )}
+            {banner.telephone && (
+              <a href={`tel:${banner.telephone}`}
+                className="p-1.5 rounded-full" style={iconBtnStyle}
+                onClick={e => e.stopPropagation()} aria-label="Chiama">
+                <Phone className="w-4 h-4" />
+              </a>
+            )}
           </div>
         </div>
       </div>
@@ -271,7 +278,15 @@ interface BannerCarouselProps {
  * real target), then instantly "teleporting" the strip to the real position
  * with no transition. The jump is invisible because content is identical.
  */
-export function BannerCarousel({ banners }: BannerCarouselProps) {
+export function BannerCarousel({ banners: rawBanners }: BannerCarouselProps) {
+  const banners = useMemo(() => {
+    const now = Date.now()
+    return rawBanners
+      .filter(b => b.visibleFrom.getTime() <= now)
+      .filter(b => b.type !== "EVENT" || !b.endsAt || new Date(b.endsAt).getTime() > now)
+      .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+  }, [rawBanners])
+
   const count = banners.length
 
   // [clone-of-last, ...real slides..., clone-of-first]
