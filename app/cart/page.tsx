@@ -74,7 +74,7 @@ export default function CartPage() {
           <AlertTitle>Modifiche agli alimenti</AlertTitle>
           <AlertDescription>
             Per eventuali modifiche agli alimenti si prega di comunicarle in cassa.
-            Ogni aggiunta comporterà un sovrapprezzo di 0,50€.
+            Ogni aggiunta potrebbe comportare un costo aggiuntivo.
           </AlertDescription>
         </Alert>
 
