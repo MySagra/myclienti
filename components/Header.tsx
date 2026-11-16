@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, LogOut } from "lucide-react";
+import { ShoppingCart, LogOut, Eye } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { useRouter } from "next/navigation";
+import { useSettings } from "@/context/SettingsContext";
+import { OrderingNotice } from "@/components/OrderingNotice";
+import { useRouter, usePathname } from "next/navigation";
 import { useState, useCallback, useEffect } from "react";
 import {
   AlertDialog,
@@ -25,7 +27,9 @@ const REFETCH_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 const Header = () => {
   const { totalItems, totalPrice, clearCart } = useCart();
+  const { formatPrice, isViewOnly } = useSettings();
   const router = useRouter();
+  const pathname = usePathname();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [footerLinks, setFooterLinks] = useState<FooterLink[]>([]);
 
@@ -67,6 +71,12 @@ const Header = () => {
               MySagra
             </Link>
 
+            {isViewOnly ? (
+              <span className="absolute right-0 flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+                <Eye className="w-4 h-4" />
+                Solo menu
+              </span>
+            ) : (
             <div className="absolute right-0 flex items-center gap-2">
               <Link
                 href="/cart"
@@ -74,7 +84,7 @@ const Header = () => {
               >
                 {totalPrice > 0 && (
                   <span className="text-sm font-bold text-foreground">
-                    {totalPrice.toFixed(2)}€
+                    {formatPrice(totalPrice)}
                   </span>
                 )}
                 <div className="relative flex items-center justify-center w-10 h-10 rounded-full bg-muted hover:bg-primary/20 transition-colors">
@@ -95,9 +105,12 @@ const Header = () => {
                 <LogOut className="w-5 h-5 text-foreground" />
               </button>
             </div>
+            )}
 
           </nav>
         </div>
+        {/* The cart page already shows its own detailed alert */}
+        {pathname !== "/cart" && <OrderingNotice />}
       </header>
 
       <AlertDialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>

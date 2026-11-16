@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import { Toaster } from "sonner";
+import { SettingsProvider } from "@/context/SettingsContext";
+import { OrderingStatusDialog } from "@/components/OrderingStatusDialog";
+import { getSettings } from "@/services/settings.service";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,22 +24,26 @@ export const metadata: Metadata = {
   description: "MyClienti - MySagra's client app",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const requireTable = process.env.REQUIRE_TABLE !== "false";
+  const settings = await getSettings();
 
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <CartProvider requireTable={requireTable}>
-          {children}
-          <Toaster position="top-center" richColors />
-        </CartProvider>
+        <SettingsProvider initialSettings={settings}>
+          <CartProvider requireTable={requireTable}>
+            {children}
+            <OrderingStatusDialog />
+            <Toaster position="top-center" richColors />
+          </CartProvider>
+        </SettingsProvider>
       </body>
     </html>
   );

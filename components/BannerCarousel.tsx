@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ChevronLeft, ChevronRight, Globe, Phone } from "lucide-react"
 import { Banner } from "@/schemas/banner"
+import { useSettings } from "@/context/SettingsContext"
 
 function FacebookIcon({ className }: { className?: string }) {
   return (
@@ -98,6 +99,7 @@ function FlipSeparator({ dark }: { dark: boolean }) {
 /* ── Countdown timer ── */
 function CountdownTimer({ target, bannerColor }: { target: Date; bannerColor: string }) {
   const [now, setNow] = useState<Date | null>(null)
+  const { timezone } = useSettings()
 
   useEffect(() => {
     setNow(new Date())
@@ -124,7 +126,7 @@ function CountdownTimer({ target, bannerColor }: { target: Date; bannerColor: st
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    timeZone: timezone
   }).format(target)
 
   return (

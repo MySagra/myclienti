@@ -3,9 +3,13 @@
 import { useEffect, useState, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import { useSettings } from "@/context/SettingsContext";
 import { clearAllCache } from "@/app/actions/cache";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ClipboardList } from "lucide-react";
+import { toast } from "sonner";
+import { getOrderingStatus } from "@/lib/ordering";
+import { orderingClosedMessage } from "@/components/OrderingStatusDialog";
 import { OrderLoading } from "./orderLoading";
 import {
   Drawer,
@@ -75,6 +79,12 @@ const ConfirmationContent = ({ instructions }: ConfirmationContentProps) => {
   const { items, totalPrice, clearItems, clearCart, name, tableNumber, displayCode, setDisplayCode, isHydrated } = useCart();
   const router = useRouter();
   const hasSubmittedRef = useRef(false);
+  const { formatPrice, refreshSettings } = useSettings();
+
+  const backToCart = (message: string | null) => {
+    toast.error(message ?? "Al momento non è possibile inviare l'ordine.");
+    router.replace("/cart");
+  };
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -83,35 +93,55 @@ const ConfirmationContent = ({ instructions }: ConfirmationContentProps) => {
 
     hasSubmittedRef.current = true;
 
-    const orderItems = items.map(item => ({
-      foodId: item.id,
-      quantity: item.quantity
-    }));
-
-    const body = {
-      customer: name,
-      table: tableNumber,
-      orderItems: orderItems
-    }
-
-    fetch("/api/orders", {
-      method: "POST",
-      body: JSON.stringify(body),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    }).then(async (res) => {
-      if (!res.ok) {
-        await clearAllCache();
-        router.replace("/500");
+    const submit = async () => {
+      // Re-check the latest settings right before sending the order
+      const latest = await refreshSettings();
+      const status = getOrderingStatus(latest);
+      if (!status.canSend) {
+        backToCart(orderingClosedMessage(status));
         return;
       }
-      const data = await res.json();
-      setDisplayCode(data.displayCode);
-    }).catch(async () => {
-      await clearAllCache();
-      router.replace("/500");
-    });
+
+      const orderItems = items.map(item => ({
+        foodId: item.id,
+        quantity: item.quantity
+      }));
+
+      const body = {
+        customer: name,
+        table: tableNumber,
+        orderItems: orderItems
+      }
+
+      fetch("/api/orders", {
+        method: "POST",
+        body: JSON.stringify(body),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }).then(async (res) => {
+        if (res.status === 403) {
+          const data = await res.json().catch(() => null);
+          if (data?.code === "ORDERING_CLOSED") {
+            await refreshSettings();
+            backToCart(data.status ? orderingClosedMessage(data.status) : null);
+            return;
+          }
+        }
+        if (!res.ok) {
+          await clearAllCache();
+          router.replace("/500");
+          return;
+        }
+        const data = await res.json();
+        setDisplayCode(data.displayCode);
+      }).catch(async () => {
+        await clearAllCache();
+        router.replace("/500");
+      });
+    };
+
+    submit();
   }, [])
 
   useEffect(() => {
@@ -171,7 +201,7 @@ const ConfirmationContent = ({ instructions }: ConfirmationContentProps) => {
 
         <div className="mb-8">
           <p className="text-2xl font-bold text-foreground mb-2">
-            Devi pagare {totalPrice.toFixed(2)}€
+            Devi pagare {formatPrice(totalPrice)}
           </p>
           <p className="text-muted-foreground text-sm">
             *Prepara i soldi per velocizzare il processo 😁
@@ -230,14 +260,14 @@ const ConfirmationContent = ({ instructions }: ConfirmationContentProps) => {
                       <span className="text-muted-foreground ml-2">x{item.quantity}</span>
                     </div>
                     <span className="font-bold text-foreground">
-                      {(item.price * item.quantity).toFixed(2)}€
+                      {formatPrice(item.price * item.quantity)}
                     </span>
                   </div>
                 ))}
               </div>
               <div className="flex justify-between items-center mt-4 pt-4 border-t border-border">
                 <span className="text-lg font-bold">Totale</span>
-                <span className="text-lg font-bold text-primary">{totalPrice.toFixed(2)}€</span>
+                <span className="text-lg font-bold text-primary">{formatPrice(totalPrice)}</span>
               </div>
             </div>
           </DrawerContent>

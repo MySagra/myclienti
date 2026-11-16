@@ -5,10 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useSettings } from "@/context/SettingsContext";
+import { orderingClosedMessage } from "@/components/OrderingStatusDialog";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertTriangleIcon } from "lucide-react"
+import { AlertTriangleIcon, Clock } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,15 +24,20 @@ import {
 
 export default function CartPage() {
   const { items, totalPrice, addItem, removeItem, clearItems } = useCart();
+  const { formatPrice, orderingStatus, isViewOnly } = useSettings();
+  const closedMessage = orderingClosedMessage(orderingStatus);
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
 
   const handleCheckout = () => {
-    if (items.length > 0) {
+    if (items.length > 0 && orderingStatus.canSend) {
       router.replace("/confirmation");
     }
   };
+
+  // View-only mode: the cart is not available (CartProvider redirects to /menu)
+  if (isViewOnly) return null;
 
   if (items.length === 0) {
     return (
@@ -69,6 +76,15 @@ export default function CartPage() {
             Svuota
           </Button>
         </div>
+        {closedMessage && (
+          <Alert className="max-w-full mb-4 border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
+            <Clock />
+            <AlertTitle>
+              {orderingStatus.reason === "CLOSED" ? "Ordini non disponibili" : "Ordini non ancora aperti"}
+            </AlertTitle>
+            <AlertDescription>{closedMessage}</AlertDescription>
+          </Alert>
+        )}
         <Alert className="max-w-full mb-4 border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50">
           <AlertTriangleIcon />
           <AlertTitle>Modifiche agli alimenti</AlertTitle>
@@ -98,7 +114,7 @@ export default function CartPage() {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-foreground">{item.name}</h3>
                   <p className="text-primary font-bold">
-                    {(item.price * item.quantity).toFixed(2)}€
+                    {formatPrice(item.price * item.quantity)}
                   </p>
                 </div>
 
@@ -136,14 +152,19 @@ export default function CartPage() {
           <div className="flex justify-between items-center text-lg">
             <span className="font-medium">Totale</span>
             <span className="font-bold text-primary text-xl">
-              {totalPrice.toFixed(2)}€
+              {formatPrice(totalPrice)}
             </span>
           </div>
           <Button
             className="w-full h-14 text-lg font-semibold"
             onClick={handleCheckout}
+            disabled={!orderingStatus.canSend}
           >
-            Conferma ordine
+            {orderingStatus.reason === "OUTSIDE_SCHEDULE"
+              ? `Invio ordini dalle ${orderingStatus.opensAt}`
+              : orderingStatus.reason === "CLOSED"
+                ? "Ordini non disponibili"
+                : "Conferma ordine"}
           </Button>
         </div>
       </div>

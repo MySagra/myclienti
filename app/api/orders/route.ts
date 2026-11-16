@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { CreateOrderSchema } from "@/schemas/order";
+import { getSettings } from "@/services/settings.service";
+import { getOrderingStatus } from "@/lib/ordering";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +14,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Invalid request body", details: validationResult.error.issues },
         { status: 400 }
+      );
+    }
+
+    // Block orders when ordering is CLOSED or outside the SCHEDULE window
+    const orderingStatus = getOrderingStatus(await getSettings());
+    if (!orderingStatus.canSend) {
+      return NextResponse.json(
+        { error: "Ordering is not available", code: "ORDERING_CLOSED", status: orderingStatus },
+        { status: 403 }
       );
     }
 

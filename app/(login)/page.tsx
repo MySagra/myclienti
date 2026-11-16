@@ -1,15 +1,23 @@
-"use client"
-
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getSettings } from "@/services/settings.service";
 import { Button } from "@/components/ui/button";
 import { LoginForm } from './components/login-form';
 import Footer from "@/components/Footer";
+import { OrderingNotice } from "@/components/OrderingNotice";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  // Ordering CLOSED: skip customer data entry and go straight to the view-only menu
+  const settings = await getSettings();
+  if (settings.ordering.mode === "CLOSED") {
+    redirect("/menu");
+  }
+
   return (
     <div className="bg-muted flex min-h-svh flex-col">
       <div className="flex flex-1 flex-col items-center justify-center p-6 md:p-10">
         <div className="w-full max-w-sm md:max-w-4xl">
+          <OrderingNotice variant="pill" className="mb-3" />
           <LoginForm />
         </div>
       </div>

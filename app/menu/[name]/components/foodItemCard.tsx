@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { Food } from "@/schemas/food";
 import { useCart } from "@/context/CartContext";
+import { useSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
 
 interface FoodItemCardProps {
@@ -16,6 +17,7 @@ export function FoodItemCard({ food }: FoodItemCardProps) {
     removeItem,
     getItemQuantity
   } = useCart();
+  const { formatPrice, isViewOnly } = useSettings();
   const quantity = getItemQuantity(food.id);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -58,9 +60,10 @@ export function FoodItemCard({ food }: FoodItemCardProps) {
 
     <div className="flex justify-between items-center">
       <p className="text-primary font-bold text-lg">
-        {Number(food.price).toFixed(2)}€
+        {formatPrice(Number(food.price))}
       </p>
 
+      {!isViewOnly && (
       <div className="flex items-center gap-2">
         <Button variant="outline" size="icon" onClick={() => removeItem(food.id)} disabled={quantity === 0} className="h-9 w-9 rounded-lg">
           <Minus className="h-4 w-4" />
@@ -74,6 +77,7 @@ export function FoodItemCard({ food }: FoodItemCardProps) {
           <Plus className="h-4 w-4" />
         </Button>
       </div>
+      )}
     </div>
   </div>;
 };

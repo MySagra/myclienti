@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Food } from "@/schemas/food";
+import { useSettings } from "@/context/SettingsContext";
 
 export interface CartItem extends Food {
   quantity: number;
@@ -57,6 +58,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children, requireTable }: { children: ReactNode; requireTable: boolean }) => {
   const router = useRouter();
   const pathname = usePathname();
+  const { isViewOnly } = useSettings();
   const [isHydrated, setIsHydrated] = useState(false);
   const [name, setNameState] = useState<string>("");
   const [tableNumber, setTableNumberState] = useState<string>("");
@@ -77,13 +79,24 @@ export const CartProvider = ({ children, requireTable }: { children: ReactNode; 
   useEffect(() => {
     if (!isHydrated) return;
 
+    // View-only mode (ordering CLOSED): no login, no cart, only the menu
+    if (isViewOnly) {
+      const isOrderFlow =
+        pathname === "/" ||
+        pathname === "/login" ||
+        pathname === "/cart" ||
+        (pathname === "/confirmation" && !displayCode);
+      if (isOrderFlow) router.replace("/menu");
+      return;
+    }
+
     // Don't redirect if already on login page
     if (pathname === "/" || pathname === "/login") return;
 
     if (!name || !tableNumber) {
       router.push("/");
     }
-  }, [isHydrated, name, tableNumber, pathname, router]);
+  }, [isHydrated, isViewOnly, name, tableNumber, displayCode, pathname, router]);
 
   // Save to sessionStorage whenever state changes
   useEffect(() => {
