@@ -4,6 +4,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ChevronLeft, ChevronRight, Globe, Phone } from "lucide-react"
 import { Banner } from "@/schemas/banner"
 import { useSettings } from "@/context/SettingsContext"
+import { useTranslation } from "react-i18next"
+import { intlLocale } from "@/lib/i18n/i18n"
 
 function FacebookIcon({ className }: { className?: string }) {
   return (
@@ -100,6 +102,7 @@ function FlipSeparator({ dark }: { dark: boolean }) {
 function CountdownTimer({ target, bannerColor }: { target: Date; bannerColor: string }) {
   const [now, setNow] = useState<Date | null>(null)
   const { timezone } = useSettings()
+  const { t, i18n } = useTranslation()
 
   useEffect(() => {
     setNow(new Date())
@@ -120,7 +123,7 @@ function CountdownTimer({ target, bannerColor }: { target: Date; bannerColor: st
 
   const dark = isDark(bannerColor)
 
-  const dateFormatted = new Intl.DateTimeFormat('it-IT', {
+  const dateFormatted = new Intl.DateTimeFormat(intlLocale(i18n.language), {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -146,21 +149,21 @@ function CountdownTimer({ target, bannerColor }: { target: Date; bannerColor: st
       <div className="flex items-start gap-[3px]">
         {days > 0 ? (
           <>
-            <FlipGroup val={days} label="giorni" dark={dark} />
+            <FlipGroup val={days} label={t("banner.days")} dark={dark} />
             <FlipSeparator dark={dark} />
-            <FlipGroup val={hours} label="ore" dark={dark} />
+            <FlipGroup val={hours} label={t("banner.hours")} dark={dark} />
           </>
         ) : hours > 0 ? (
           <>
-            <FlipGroup val={hours} label="ore" dark={dark} />
+            <FlipGroup val={hours} label={t("banner.hours")} dark={dark} />
             <FlipSeparator dark={dark} />
-            <FlipGroup val={minutes} label="min" dark={dark} />
+            <FlipGroup val={minutes} label={t("banner.minutes")} dark={dark} />
           </>
         ) : (
           <>
-            <FlipGroup val={minutes} label="min" dark={dark} />
+            <FlipGroup val={minutes} label={t("banner.minutes")} dark={dark} />
             <FlipSeparator dark={dark} />
-            <FlipGroup val={seconds} label="sec" dark={dark} />
+            <FlipGroup val={seconds} label={t("banner.seconds")} dark={dark} />
           </>
         )}
       </div>
@@ -170,6 +173,7 @@ function CountdownTimer({ target, bannerColor }: { target: Date; bannerColor: st
 
 /* ── Banner slide ── */
 function BannerSlide({ banner }: { banner: Banner }) {
+  const { t } = useTranslation()
   const color = `#${banner.color}`
   const imgUrl = banner.image ? `/api/proxy/uploads/banners/${banner.image}` : null
 
@@ -210,7 +214,7 @@ function BannerSlide({ banner }: { banner: Banner }) {
           className="text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide"
           style={{ backgroundColor: color, color: badgeTxt }}
         >
-          {banner.type === "EVENT" ? "Evento" : "Sponsor"}
+          {banner.type === "EVENT" ? t("banner.event") : t("banner.sponsor")}
         </span>
 
         {/* Right: countdown (if any) + social icons stacked vertically */}
@@ -222,7 +226,7 @@ function BannerSlide({ banner }: { banner: Banner }) {
             {banner.website && (
               <a href={banner.website} target="_blank" rel="noopener noreferrer"
                 className="p-1.5 rounded-full" style={iconBtnStyle}
-                onClick={e => e.stopPropagation()} aria-label="Sito web">
+                onClick={e => e.stopPropagation()} aria-label={t("banner.website")}>
                 <Globe className="w-4 h-4" />
               </a>
             )}
@@ -243,7 +247,7 @@ function BannerSlide({ banner }: { banner: Banner }) {
             {banner.telephone && (
               <a href={`tel:${banner.telephone}`}
                 className="p-1.5 rounded-full" style={iconBtnStyle}
-                onClick={e => e.stopPropagation()} aria-label="Chiama">
+                onClick={e => e.stopPropagation()} aria-label={t("banner.call")}>
                 <Phone className="w-4 h-4" />
               </a>
             )}
@@ -281,6 +285,7 @@ interface BannerCarouselProps {
  * with no transition. The jump is invisible because content is identical.
  */
 export function BannerCarousel({ banners: rawBanners }: BannerCarouselProps) {
+  const { t } = useTranslation()
   const banners = useMemo(() => {
     const now = Date.now()
     return rawBanners
@@ -449,7 +454,7 @@ export function BannerCarousel({ banners: rawBanners }: BannerCarouselProps) {
               onClick={goPrev}
               className="absolute left-2 top-1/2 -translate-y-1/2 z-30 rounded-full p-1.5"
               style={{ backgroundColor: `${color}cc` }}
-              aria-label="Banner precedente"
+              aria-label={t("banner.previous")}
             >
               <ChevronLeft className="w-4 h-4 text-white" />
             </button>
@@ -457,7 +462,7 @@ export function BannerCarousel({ banners: rawBanners }: BannerCarouselProps) {
               onClick={goNext}
               className="absolute right-2 top-1/2 -translate-y-1/2 z-30 rounded-full p-1.5"
               style={{ backgroundColor: `${color}cc` }}
-              aria-label="Banner successivo"
+              aria-label={t("banner.next")}
             >
               <ChevronRight className="w-4 h-4 text-white" />
             </button>
@@ -483,7 +488,7 @@ export function BannerCarousel({ banners: rawBanners }: BannerCarouselProps) {
                   opacity: isActive ? 1 : 0.4,
                   transition: "width 0.35s ease, opacity 0.35s ease",
                 }}
-                aria-label={`Vai al banner ${i + 1}`}
+                aria-label={t("banner.goTo", { n: i + 1 })}
               >
                 {isActive && (
                   <>

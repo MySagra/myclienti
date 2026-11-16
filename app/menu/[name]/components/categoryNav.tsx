@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface CategoryNavProps {
   categories: { id: string; name: string }[];
@@ -9,6 +10,7 @@ interface CategoryNavProps {
 }
 
 export function CategoryNav({ categories, currentId }: CategoryNavProps) {
+  const { t } = useTranslation();
   const router = useRouter();
   const currentIndex = categories.findIndex((cat) => cat.id === currentId);
 
@@ -31,7 +33,7 @@ export function CategoryNav({ categories, currentId }: CategoryNavProps) {
           onClick={goPrev}
           disabled={currentIndex <= 0}
           className="p-2 rounded-full hover:bg-muted transition-colors disabled:opacity-0"
-          aria-label="Categoria precedente"
+          aria-label={t("menu.previousCategory")}
         >
           <ChevronLeft className="w-6 h-6 text-foreground" />
         </button>
@@ -44,7 +46,7 @@ export function CategoryNav({ categories, currentId }: CategoryNavProps) {
           onClick={goNext}
           disabled={currentIndex >= categories.length - 1}
           className="p-2 rounded-full hover:bg-muted transition-colors disabled:opacity-0"
-          aria-label="Categoria successiva"
+          aria-label={t("menu.nextCategory")}
         >
           <ChevronRight className="w-6 h-6 text-foreground" />
         </button>

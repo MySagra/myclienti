@@ -4,6 +4,8 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Clock } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
+import { useTranslation } from "react-i18next";
+import type { Translate } from "@/lib/table";
 import type { OrderingStatus } from "@/lib/ordering";
 import {
   AlertDialog,
@@ -23,12 +25,12 @@ function statusKey(status: OrderingStatus): string {
 }
 
 /** Short, human readable explanation of why orders cannot be sent. */
-export function orderingClosedMessage(status: OrderingStatus): string | null {
+export function orderingClosedMessage(status: OrderingStatus, t: Translate): string | null {
   if (status.reason === "CLOSED") {
-    return "Al momento non è possibile inviare ordini dall'app. Rivolgiti direttamente alla cassa.";
+    return t("ordering.closedMessage");
   }
   if (status.reason === "OUTSIDE_SCHEDULE") {
-    return `Puoi già comporre il tuo ordine, ma potrai inviarlo solo dalle ${status.opensAt} alle ${status.closesAt}.`;
+    return t("ordering.scheduleMessage", { opensAt: status.opensAt, closesAt: status.closesAt });
   }
   return null;
 }
@@ -39,6 +41,7 @@ export function orderingClosedMessage(status: OrderingStatus): string | null {
  */
 export function OrderingStatusDialog() {
   const { orderingStatus } = useSettings();
+  const { t } = useTranslation();
   const pathname = usePathname();
   const [dismissedKey, setDismissedKey] = useState<string | null>(() => {
     if (typeof window === "undefined") return null;
@@ -68,15 +71,15 @@ export function OrderingStatusDialog() {
         <AlertDialogHeader>
           <Clock className="w-12 h-12 mx-auto text-primary" />
           <AlertDialogTitle className="text-xl text-center">
-            Ordini non ancora aperti
+            {t("ordering.notOpenTitle")}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-center w-full">
-            {orderingClosedMessage(orderingStatus)}
+            {orderingClosedMessage(orderingStatus, t)}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogAction onClick={handleDismiss} className="w-full">
-            Ho capito
+            {t("common.gotIt")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

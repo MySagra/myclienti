@@ -53,9 +53,9 @@ export function getOrderingStatus(settings: ClientSettings, now: Date = new Date
     : { canSend: false, reason: 'OUTSIDE_SCHEDULE', opensAt, closesAt }
 }
 
-export function formatPrice(value: number, currency: string): string {
+export function formatPrice(value: number, currency: string, locale = 'it-IT'): string {
   try {
-    return new Intl.NumberFormat('it-IT', { style: 'currency', currency }).format(value)
+    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(value)
   } catch {
     return `${value.toFixed(2)} ${currency}`
   }

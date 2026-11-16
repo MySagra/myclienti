@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { FoodItemCard } from "./foodItemCard";
 import { Category } from "@/schemas/category";
 
@@ -11,6 +12,7 @@ interface CategoryViewProps {
 }
 
 export function CategoryView({ categories, initialName }: CategoryViewProps) {
+  const { t } = useTranslation();
   const initialIndex = categories.findIndex((cat) => cat.name === initialName);
   const [currentIndex, setCurrentIndex] = useState(initialIndex >= 0 ? initialIndex : 0);
   const [direction, setDirection] = useState<"left" | "right" | null>(null);
@@ -100,7 +102,7 @@ export function CategoryView({ categories, initialName }: CategoryViewProps) {
             onClick={goPrev}
             disabled={currentIndex <= 0 || isAnimating}
             className={`p-2 rounded-full hover:bg-muted transition-colors ${currentIndex <= 0 ? "invisible" : ""}`}
-            aria-label="Categoria precedente"
+            aria-label={t("menu.previousCategory")}
           >
             <ChevronLeft className="w-6 h-6 text-foreground" />
           </button>
@@ -117,7 +119,7 @@ export function CategoryView({ categories, initialName }: CategoryViewProps) {
             onClick={goNext}
             disabled={currentIndex >= categories.length - 1 || isAnimating}
             className={`p-2 rounded-full hover:bg-muted transition-colors ${currentIndex >= categories.length - 1 ? "invisible" : ""}`}
-            aria-label="Categoria successiva"
+            aria-label={t("menu.nextCategory")}
           >
             <ChevronRight className="w-6 h-6 text-foreground" />
           </button>

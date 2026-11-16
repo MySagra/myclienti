@@ -5,6 +5,8 @@ import { ShoppingCart, LogOut, Eye } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useSettings } from "@/context/SettingsContext";
 import { OrderingNotice } from "@/components/OrderingNotice";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { Trans, useTranslation } from "react-i18next";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useCallback, useEffect } from "react";
 import {
@@ -28,6 +30,7 @@ const REFETCH_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const Header = () => {
   const { totalItems, totalPrice, clearCart } = useCart();
   const { formatPrice, isViewOnly } = useSettings();
+  const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
@@ -72,12 +75,16 @@ const Header = () => {
             </Link>
 
             {isViewOnly ? (
-              <span className="absolute right-0 flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                <Eye className="w-4 h-4" />
-                Solo menu
-              </span>
+              <div className="absolute right-0 flex items-center gap-2">
+                <span className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+                  <Eye className="w-4 h-4" />
+                  {t("header.viewOnly")}
+                </span>
+                <LanguageSwitcher variant="compact" />
+              </div>
             ) : (
             <div className="absolute right-0 flex items-center gap-2">
+              <LanguageSwitcher variant="compact" />
               <Link
                 href="/cart"
                 className="flex items-center gap-2"
@@ -100,7 +107,8 @@ const Header = () => {
               <button
                 onClick={() => setLogoutDialogOpen(true)}
                 className="flex items-center justify-center w-10 h-10 rounded-full bg-muted hover:bg-destructive/20 transition-colors"
-                title="Esci dalla sessione"
+                title={t("header.logoutTitle")}
+                aria-label={t("header.logoutTitle")}
               >
                 <LogOut className="w-5 h-5 text-foreground" />
               </button>
@@ -116,21 +124,21 @@ const Header = () => {
       <AlertDialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl text-center">Uscire dalla sessione?</AlertDialogTitle>
+            <AlertDialogTitle className="text-xl text-center">{t("header.logoutConfirmTitle")}</AlertDialogTitle>
             <AlertDialogDescription className="text-left w-full">
-              Tutti i progressi compiuti nell'ordine <strong>verranno persi</strong>
+              <Trans i18nKey="header.logoutConfirmDescription" />
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           <AlertDialogFooter className="flex flex-col gap-2 sm:space-x-0">
             <div className="flex flex-row gap-2 sm:space-x-0">
-              <AlertDialogCancel className="flex-1 mt-0 sm:mt-0">Annulla</AlertDialogCancel>
+              <AlertDialogCancel className="flex-1 mt-0 sm:mt-0">{t("common.cancel")}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleLogoutConfirm}
                 className="flex-1"
                 variant="destructive"
               >
-                Esci
+                {t("header.logout")}
               </AlertDialogAction>
             </div>
 

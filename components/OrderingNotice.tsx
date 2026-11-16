@@ -2,6 +2,7 @@
 
 import { Clock, Eye } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 /**
@@ -21,14 +22,15 @@ export function OrderingNotice({
   className?: string;
 }) {
   const { orderingStatus } = useSettings();
+  const { t } = useTranslation();
 
   if (orderingStatus.canSend) return null;
 
   const isClosed = orderingStatus.reason === "CLOSED";
   const Icon = isClosed ? Eye : Clock;
   const text = isClosed
-    ? "Ordini dall'app non disponibili: consulta il menu e ordina in cassa"
-    : `Invio ordini dalle ${orderingStatus.opensAt} alle ${orderingStatus.closesAt}`;
+    ? t("ordering.closedNotice")
+    : t("ordering.scheduleNotice", { opensAt: orderingStatus.opensAt, closesAt: orderingStatus.closesAt });
 
   if (variant === "pill") {
     return (

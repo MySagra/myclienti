@@ -2,7 +2,9 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from "react";
 import type { ClientSettings } from "@/schemas/settings";
+import { useTranslation } from "react-i18next";
 import { formatPrice as formatPriceWith, getOrderingStatus, OrderingStatus } from "@/lib/ordering";
+import { intlLocale } from "@/lib/i18n/i18n";
 
 const SETTINGS_REFETCH_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const CLOCK_TICK_INTERVAL = 15 * 1000; // 15 seconds
@@ -29,6 +31,8 @@ export const SettingsProvider = ({
 }) => {
   const [settings, setSettings] = useState<ClientSettings>(initialSettings);
   const [now, setNow] = useState<Date>(() => new Date());
+  const { i18n } = useTranslation();
+  const locale = intlLocale(i18n.language);
 
   const refreshSettings = useCallback(async () => {
     try {
@@ -58,8 +62,8 @@ export const SettingsProvider = ({
   const orderingStatus = useMemo(() => getOrderingStatus(settings, now), [settings, now]);
 
   const formatPrice = useCallback(
-    (value: number) => formatPriceWith(value, settings.currency),
-    [settings.currency]
+    (value: number) => formatPriceWith(value, settings.currency, locale),
+    [settings.currency, locale]
   );
 
   return (

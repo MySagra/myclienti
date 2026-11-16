@@ -5,6 +5,7 @@ import { Minus, Plus } from "lucide-react";
 import { Food } from "@/schemas/food";
 import { useCart } from "@/context/CartContext";
 import { useSettings } from "@/context/SettingsContext";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 
 interface FoodItemCardProps {
@@ -18,6 +19,7 @@ export function FoodItemCard({ food }: FoodItemCardProps) {
     getItemQuantity
   } = useCart();
   const { formatPrice, isViewOnly } = useSettings();
+  const { t } = useTranslation();
   const quantity = getItemQuantity(food.id);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -31,12 +33,12 @@ export function FoodItemCard({ food }: FoodItemCardProps) {
       <div className="min-h-[1rem] mt-1 flex flex-col justify-start">
         {hasIngredients && (
           <p className="text-sm text-muted-foreground">
-            Ingredienti: {food.ingredients!.map((i) => i.name).join(", ")}
+            {t("menu.ingredients")} {food.ingredients!.map((i) => i.name).join(", ")}
           </p>
         )}
         {hasDescription && (
           <p className="text-sm text-muted-foreground">
-            {hasIngredients ? "Descrizione: " : ""}{isExpanded || !isLongDesc ? food.description : `${food.description!.slice(0, 60).trim()}`}
+            {hasIngredients ? `${t("menu.description")} ` : ""}{isExpanded || !isLongDesc ? food.description : `${food.description!.slice(0, 60).trim()}`}
             {!isExpanded && isLongDesc && (
               <button
                 onClick={() => setIsExpanded(true)}
@@ -50,7 +52,7 @@ export function FoodItemCard({ food }: FoodItemCardProps) {
                 onClick={() => setIsExpanded(false)}
                 className="ml-1 text-primary hover:underline text-xs"
               >
-                (riduci)
+                {t("menu.showLess")}
               </button>
             )}
           </p>

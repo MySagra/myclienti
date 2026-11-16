@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useSettings } from "@/context/SettingsContext";
+import { Trans, useTranslation } from "react-i18next";
 import { orderingClosedMessage } from "@/components/OrderingStatusDialog";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,8 @@ import {
 export default function CartPage() {
   const { items, totalPrice, addItem, removeItem, clearItems } = useCart();
   const { formatPrice, orderingStatus, isViewOnly } = useSettings();
-  const closedMessage = orderingClosedMessage(orderingStatus);
+  const { t } = useTranslation();
+  const closedMessage = orderingClosedMessage(orderingStatus, t);
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
@@ -46,12 +48,12 @@ export default function CartPage() {
         <main className="container max-w-lg mx-auto px-4 py-12">
           <div className="text-center">
             <ShoppingBag className="w-20 h-20 mx-auto text-muted-foreground mb-4" />
-            <h1 className="text-2xl font-bold mb-2">Il tuo carrello è vuoto</h1>
+            <h1 className="text-2xl font-bold mb-2">{t("cart.emptyTitle")}</h1>
             <p className="text-muted-foreground mb-6">
-              Aggiungi qualcosa di buono!
+              {t("cart.emptySubtitle")}
             </p>
             <Link href="/menu">
-              <Button>Torna al menu</Button>
+              <Button>{t("common.backToMenu")}</Button>
             </Link>
           </div>
         </main>
@@ -65,7 +67,7 @@ export default function CartPage() {
 
       <main className="container max-w-lg mx-auto px-4 py-6 flex flex-col flex-1 overflow-hidden">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Il tuo ordine</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("cart.title")}</h1>
           <Button
             variant="ghost"
             size="sm"
@@ -73,24 +75,23 @@ export default function CartPage() {
             onClick={() => setClearDialogOpen(true)}
           >
             <Trash2 className="w-4 h-4 mr-1" />
-            Svuota
+            {t("cart.clear")}
           </Button>
         </div>
         {closedMessage && (
           <Alert className="max-w-full mb-4 border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
             <Clock />
             <AlertTitle>
-              {orderingStatus.reason === "CLOSED" ? "Ordini non disponibili" : "Ordini non ancora aperti"}
+              {orderingStatus.reason === "CLOSED" ? t("ordering.closedTitle") : t("ordering.notOpenTitle")}
             </AlertTitle>
             <AlertDescription>{closedMessage}</AlertDescription>
           </Alert>
         )}
         <Alert className="max-w-full mb-4 border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50">
           <AlertTriangleIcon />
-          <AlertTitle>Modifiche agli alimenti</AlertTitle>
+          <AlertTitle>{t("cart.changesTitle")}</AlertTitle>
           <AlertDescription>
-            Per eventuali modifiche agli alimenti si prega di comunicarle in cassa.
-            Ogni aggiunta potrebbe comportare un costo aggiuntivo.
+            {t("cart.changesDescription")}
           </AlertDescription>
         </Alert>
 
@@ -150,7 +151,7 @@ export default function CartPage() {
       <div className="shrink-0 bg-card border-t border-border p-4 shadow-lg">
         <div className="container max-w-lg mx-auto space-y-3">
           <div className="flex justify-between items-center text-lg">
-            <span className="font-medium">Totale</span>
+            <span className="font-medium">{t("cart.total")}</span>
             <span className="font-bold text-primary text-xl">
               {formatPrice(totalPrice)}
             </span>
@@ -161,10 +162,10 @@ export default function CartPage() {
             disabled={!orderingStatus.canSend}
           >
             {orderingStatus.reason === "OUTSIDE_SCHEDULE"
-              ? `Invio ordini dalle ${orderingStatus.opensAt}`
+              ? t("ordering.sendFrom", { opensAt: orderingStatus.opensAt })
               : orderingStatus.reason === "CLOSED"
-                ? "Ordini non disponibili"
-                : "Conferma ordine"}
+                ? t("ordering.closedTitle")
+                : t("cart.confirm")}
           </Button>
         </div>
       </div>
@@ -172,21 +173,19 @@ export default function CartPage() {
       <AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl text-center">Svuotare il carrello?</AlertDialogTitle>
+            <AlertDialogTitle className="text-xl text-center">{t("cart.clearConfirmTitle")}</AlertDialogTitle>
             <AlertDialogDescription className="text-left w-full">
-              Tutti gli articoli nel carrello <strong>verranno rimossi</strong>.
-              <br />
-              Sei sicuro di voler continuare?
+              <Trans i18nKey="cart.clearConfirmDescription" />
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex flex-row gap-2 sm:space-x-0">
-            <AlertDialogCancel className="flex-1 mt-0 sm:mt-0">Annulla</AlertDialogCancel>
+            <AlertDialogCancel className="flex-1 mt-0 sm:mt-0">{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => { clearItems(); setClearDialogOpen(false); }}
               className="flex-1"
               variant="destructive"
             >
-              Svuota
+              {t("cart.clear")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { Category } from "@/schemas/category";
 
 interface CategoryCardProps {
@@ -6,6 +9,7 @@ interface CategoryCardProps {
 }
 
 const CategoryCard = ({ category }: CategoryCardProps) => {
+  const { t } = useTranslation();
   // Extract filename from the full URL
   const getImageFilename = (url: string) => {
     const match = url.match(/category-[^/]+\.jpg$/);
@@ -24,7 +28,7 @@ const CategoryCard = ({ category }: CategoryCardProps) => {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-              Nessuna immagine
+              {t("menu.noImage")}
             </div>
           )}
         </div>

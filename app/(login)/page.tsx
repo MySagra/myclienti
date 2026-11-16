@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { LoginForm } from './components/login-form';
 import Footer from "@/components/Footer";
 import { OrderingNotice } from "@/components/OrderingNotice";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default async function LoginPage() {
   // Ordering CLOSED: skip customer data entry and go straight to the view-only menu
@@ -14,7 +15,10 @@ export default async function LoginPage() {
   }
 
   return (
-    <div className="bg-muted flex min-h-svh flex-col">
+    <div className="relative bg-muted flex min-h-svh flex-col">
+      <div className="absolute top-0 right-0 m-4 z-10">
+        <LanguageSwitcher />
+      </div>
       <div className="flex flex-1 flex-col items-center justify-center p-6 md:p-10">
         <div className="w-full max-w-sm md:max-w-4xl">
           <OrderingNotice variant="pill" className="mb-3" />

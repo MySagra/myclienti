@@ -8,6 +8,7 @@ import { clearAllCache } from "@/app/actions/cache";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { getOrderingStatus } from "@/lib/ordering";
 import { orderingClosedMessage } from "@/components/OrderingStatusDialog";
 import { OrderLoading } from "./orderLoading";
@@ -80,9 +81,10 @@ const ConfirmationContent = ({ instructions }: ConfirmationContentProps) => {
   const router = useRouter();
   const hasSubmittedRef = useRef(false);
   const { formatPrice, refreshSettings } = useSettings();
+  const { t } = useTranslation();
 
   const backToCart = (message: string | null) => {
-    toast.error(message ?? "Al momento non è possibile inviare l'ordine.");
+    toast.error(message ?? t("ordering.cannotSend"));
     router.replace("/cart");
   };
 
@@ -98,7 +100,7 @@ const ConfirmationContent = ({ instructions }: ConfirmationContentProps) => {
       const latest = await refreshSettings();
       const status = getOrderingStatus(latest);
       if (!status.canSend) {
-        backToCart(orderingClosedMessage(status));
+        backToCart(orderingClosedMessage(status, t));
         return;
       }
 
@@ -124,7 +126,7 @@ const ConfirmationContent = ({ instructions }: ConfirmationContentProps) => {
           const data = await res.clone().json().catch(() => null);
           if (data?.code === "INVALID_TABLE") {
             // Table rules changed (e.g. maxTables lowered): ask the customer for the table again
-            toast.error(`${data.error}. Reinserisci il tavolo.`);
+            toast.error(t("table.invalidRetry"));
             setTableNumber("");
             router.replace("/");
             return;
@@ -134,7 +136,7 @@ const ConfirmationContent = ({ instructions }: ConfirmationContentProps) => {
           const data = await res.json().catch(() => null);
           if (data?.code === "ORDERING_CLOSED") {
             await refreshSettings();
-            backToCart(data.status ? orderingClosedMessage(data.status) : null);
+            backToCart(data.status ? orderingClosedMessage(data.status, t) : null);
             return;
           }
         }
@@ -199,10 +201,10 @@ const ConfirmationContent = ({ instructions }: ConfirmationContentProps) => {
         <CheckCircle className="w-16 h-16 mx-auto text-primary mb-6" />
 
         <h1 className="text-2xl font-bold text-foreground mb-1">
-          Questo è il tuo codice ordine,
+          {t("confirmation.codeTitle")}
         </h1>
         <p className="text-xl font-bold text-foreground mb-8">
-          non dimenticarlo:
+          {t("confirmation.codeSubtitle")}
         </p>
 
         <div className="text-8xl font-black text-primary mb-8 tracking-wider font-mono">
@@ -211,17 +213,17 @@ const ConfirmationContent = ({ instructions }: ConfirmationContentProps) => {
 
         <div className="mb-8">
           <p className="text-2xl font-bold text-foreground mb-2">
-            Devi pagare {formatPrice(totalPrice)}
+            {t("confirmation.toPay", { amount: formatPrice(totalPrice) })}
           </p>
           <p className="text-muted-foreground text-sm">
-            *Prepara i soldi per velocizzare il processo 😁
+            {t("confirmation.prepareMoney")}
           </p>
         </div>
 
         {instructions.length > 0 && (
           <div className="bg-card rounded-lg p-6 mb-8 text-left shadow-sm border border-border">
             <h2 className="text-xl font-bold text-foreground mb-4 text-center">
-              Cosa devo fare ora?
+              {t("confirmation.whatNow")}
             </h2>
 
             <ol className="space-y-3 list-none">
@@ -241,7 +243,7 @@ const ConfirmationContent = ({ instructions }: ConfirmationContentProps) => {
           className="w-full h-14 text-lg font-semibold"
           onClick={handleNewOrder}
         >
-          Crea un nuovo ordine
+          {t("confirmation.newOrder")}
         </Button>
 
         <Drawer>
@@ -251,12 +253,12 @@ const ConfirmationContent = ({ instructions }: ConfirmationContentProps) => {
               className="w-full h-12 text-base font-medium mt-3"
             >
               <ClipboardList className="w-5 h-5 mr-2" />
-              Vedi riepilogo ordine
+              {t("confirmation.viewSummary")}
             </Button>
           </DrawerTrigger>
           <DrawerContent>
             <DrawerHeader>
-              <DrawerTitle className="text-center text-xl">Riepilogo ordine</DrawerTitle>
+              <DrawerTitle className="text-center text-xl">{t("confirmation.summaryTitle")}</DrawerTitle>
             </DrawerHeader>
             <div className="px-4 pb-6 max-h-[60vh] overflow-y-auto">
               <div className="space-y-3">
@@ -276,7 +278,7 @@ const ConfirmationContent = ({ instructions }: ConfirmationContentProps) => {
                 ))}
               </div>
               <div className="flex justify-between items-center mt-4 pt-4 border-t border-border">
-                <span className="text-lg font-bold">Totale</span>
+                <span className="text-lg font-bold">{t("confirmation.total")}</span>
                 <span className="text-lg font-bold text-primary">{formatPrice(totalPrice)}</span>
               </div>
             </div>
