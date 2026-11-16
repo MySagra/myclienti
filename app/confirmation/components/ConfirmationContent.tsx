@@ -76,7 +76,7 @@ interface ConfirmationContentProps {
 }
 
 const ConfirmationContent = ({ instructions }: ConfirmationContentProps) => {
-  const { items, totalPrice, clearItems, clearCart, name, tableNumber, displayCode, setDisplayCode, isHydrated } = useCart();
+  const { items, totalPrice, clearItems, clearCart, name, tableNumber, setTableNumber, displayCode, setDisplayCode, isHydrated } = useCart();
   const router = useRouter();
   const hasSubmittedRef = useRef(false);
   const { formatPrice, refreshSettings } = useSettings();
@@ -120,6 +120,16 @@ const ConfirmationContent = ({ instructions }: ConfirmationContentProps) => {
           "Content-Type": "application/json"
         }
       }).then(async (res) => {
+        if (res.status === 400) {
+          const data = await res.clone().json().catch(() => null);
+          if (data?.code === "INVALID_TABLE") {
+            // Table rules changed (e.g. maxTables lowered): ask the customer for the table again
+            toast.error(`${data.error}. Reinserisci il tavolo.`);
+            setTableNumber("");
+            router.replace("/");
+            return;
+          }
+        }
         if (res.status === 403) {
           const data = await res.json().catch(() => null);
           if (data?.code === "ORDERING_CLOSED") {

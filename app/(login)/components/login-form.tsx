@@ -12,13 +12,19 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import z from "zod"
 
-import { useForm, FormProvider } from "react-hook-form"
+import { useForm, FormProvider, type FieldErrors } from "react-hook-form"
 import { useCart } from "@/context/CartContext"
+import { useSettings } from "@/context/SettingsContext"
+import { NO_TABLE, tableFieldCopy, tableValueSchema } from "@/lib/table"
 
 export function LoginForm() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
-    const { setName, setTableNumber, requireTable } = useCart();
+    const { setName, setTableNumber } = useCart();
+    const { settings } = useSettings();
+    const tableSettings = settings.table;
+    const showTable = tableSettings.enabled;
+    const tableCopy = tableFieldCopy(tableSettings);
 
     // Read saved user info for precompilation
     const getSavedUser = () => {
@@ -27,53 +33,42 @@ export function LoginForm() {
             const saved = sessionStorage.getItem("mysagra-user");
             if (saved) {
                 const parsed = JSON.parse(saved);
-                return { name: parsed.name || "", table: parsed.tableNumber || "" };
+                const table = parsed.tableNumber && parsed.tableNumber !== NO_TABLE ? parsed.tableNumber : "";
+                return { name: parsed.name || "", table };
             }
         } catch { }
         return { name: "", table: "" };
     };
     const savedUser = getSavedUser();
 
+    // Customer name is always required; the table depends on the settings (HIDDEN removes it)
     const formSchema = z.object({
-        name: z.string().min(1, "Nome obbligatorio").max(36, "Il nome non può superare 36 caratteri"),
-        table: requireTable
-            ? z.string()
-                .min(1, "Numero tavolo obbligatorio")
-                .regex(/^\d+$/, "Inserisci solo numeri")
-                .refine((v) => parseInt(v, 10) >= 1, { message: "Il tavolo deve essere almeno 1" })
-                .refine((v) => parseInt(v, 10) <= 9999, { message: "Il tavolo non può superare 9999" })
-            : z.string().optional(),
+        name: z.string().trim().min(1, "Nome obbligatorio").max(36, "Il nome non può superare 36 caratteri"),
+        table: showTable ? tableValueSchema(tableSettings) : z.string().optional(),
     });
 
-    const form = useForm<z.infer<typeof formSchema>>({
+    const form = useForm<z.input<typeof formSchema>, unknown, z.output<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: savedUser.name,
-            table: requireTable ? savedUser.table : "NO_TABLE_PRESET",
+            table: showTable ? savedUser.table : "",
         }
     });
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
+    async function onSubmit(values: z.output<typeof formSchema>) {
         setName(values.name);
-        setTableNumber(requireTable ? (values.table ?? "NO_TABLE_PRESET") : "NO_TABLE_PRESET");
+        setTableNumber(showTable ? (values.table ?? "") : NO_TABLE);
         sessionStorage.removeItem("mysagra-user");
         router.push("/menu");
     }
 
-
     // Handle validation errors from react-hook-form (zod)
-    function onError(errors: any) {
-        // If both username and password are missing, show a combined message
-        const usernameError = (errors.username as any)?.message;
-        const passwordError = (errors.password as any)?.message;
-
-        if (usernameError && passwordError) {
-            toast.error(`Nome e Numero tavolo sono obbligatori`);
+    function onError(errors: FieldErrors<z.input<typeof formSchema>>) {
+        if (errors.name && errors.table && !form.getValues("name") && !form.getValues("table")) {
+            toast.error(`Nome e ${tableCopy.label.toLowerCase()} sono obbligatori`);
             return;
         }
-
-        const first = Object.values(errors)[0];
-        const message = (first as any)?.message || 'Errore di validazione';
+        const message = errors.name?.message || errors.table?.message || "Errore di validazione";
         toast.error(message);
     }
 
@@ -109,9 +104,9 @@ export function LoginForm() {
                                         )}
                                     />
                                 </Field>
-                                {requireTable && (
+                                {showTable && (
                                     <Field>
-                                        <FieldLabel htmlFor="table">Numero tavolo</FieldLabel>
+                                        <FieldLabel htmlFor="table">{tableCopy.label}</FieldLabel>
                                         <FormField
                                             control={form.control}
                                             name="table"
@@ -120,8 +115,8 @@ export function LoginForm() {
                                                     <FormControl>
                                                         <Input
                                                             autoComplete="off"
-                                                            placeholder="Numero tavolo"
-                                                            inputMode="numeric"
+                                                            placeholder={tableCopy.placeholder}
+                                                            inputMode={tableCopy.inputMode}
                                                             {...field}
                                                         />
                                                     </FormControl>

@@ -29,7 +29,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const requireTable = process.env.REQUIRE_TABLE !== "false";
   const settings = await getSettings();
 
   return (
@@ -38,7 +37,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SettingsProvider initialSettings={settings}>
-          <CartProvider requireTable={requireTable}>
+          <CartProvider>
             {children}
             <OrderingStatusDialog />
             <Toaster position="top-center" richColors />

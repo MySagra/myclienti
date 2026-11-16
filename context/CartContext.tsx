@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useRouter, usePathname } from "next/navigation";
 import { Food } from "@/schemas/food";
 import { useSettings } from "@/context/SettingsContext";
+import { NO_TABLE } from "@/lib/table";
 
 export interface CartItem extends Food {
   quantity: number;
@@ -50,18 +51,26 @@ interface CartContextType {
   isHydrated: boolean;
   displayCode: string;
   setDisplayCode: (code: string) => void;
-  requireTable: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export const CartProvider = ({ children, requireTable }: { children: ReactNode; requireTable: boolean }) => {
+export const CartProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { isViewOnly } = useSettings();
+  const { isViewOnly, settings } = useSettings();
+  const tableEnabled = settings.table.enabled;
   const [isHydrated, setIsHydrated] = useState(false);
   const [name, setNameState] = useState<string>("");
-  const [tableNumber, setTableNumberState] = useState<string>("");
+  const [storedTableNumber, setTableNumberState] = useState<string>("");
+
+  // Effective table: fixed placeholder when the table is HIDDEN; when it becomes visible
+  // again, a leftover placeholder counts as "missing" so the customer is asked for it.
+  const tableNumber = !tableEnabled
+    ? NO_TABLE
+    : storedTableNumber === NO_TABLE
+      ? ""
+      : storedTableNumber;
   const [items, setItems] = useState<CartItem[]>([]);
   const [displayCode, setDisplayCodeState] = useState<string>("");
 
@@ -69,7 +78,7 @@ export const CartProvider = ({ children, requireTable }: { children: ReactNode; 
   useEffect(() => {
     const stored = getStoredCart();
     setNameState(stored.name);
-    setTableNumberState(requireTable ? stored.tableNumber : "NO_TABLE_PRESET");
+    setTableNumberState(stored.tableNumber);
     setItems(stored.items);
     setDisplayCodeState(stored.displayCode || "");
     setIsHydrated(true);
@@ -101,13 +110,13 @@ export const CartProvider = ({ children, requireTable }: { children: ReactNode; 
   // Save to sessionStorage whenever state changes
   useEffect(() => {
     if (!isHydrated) return;
-    const cartState: CartState = { name, tableNumber, items, displayCode };
+    const cartState: CartState = { name, tableNumber: storedTableNumber, items, displayCode };
     try {
       sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartState));
     } catch (e) {
       console.error("Error saving cart to sessionStorage:", e);
     }
-  }, [name, tableNumber, items, displayCode, isHydrated]);
+  }, [name, storedTableNumber, items, displayCode, isHydrated]);
 
   const setName = (newName: string) => {
     setNameState(newName);
@@ -196,7 +205,6 @@ export const CartProvider = ({ children, requireTable }: { children: ReactNode; 
         isHydrated,
         displayCode,
         setDisplayCode,
-        requireTable,
       }}
     >
       {children}

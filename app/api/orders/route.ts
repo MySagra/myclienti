@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { CreateOrderSchema } from "@/schemas/order";
 import { getSettings } from "@/services/settings.service";
 import { getOrderingStatus } from "@/lib/ordering";
+import { NO_TABLE, tableValueSchema } from "@/lib/table";
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,12 +19,28 @@ export async function POST(request: NextRequest) {
     }
 
     // Block orders when ordering is CLOSED or outside the SCHEDULE window
-    const orderingStatus = getOrderingStatus(await getSettings());
+    const settings = await getSettings();
+    const orderingStatus = getOrderingStatus(settings);
     if (!orderingStatus.canSend) {
       return NextResponse.json(
         { error: "Ordering is not available", code: "ORDERING_CLOSED", status: orderingStatus },
         { status: 403 }
       );
+    }
+
+    // Table rules from settings: HIDDEN -> placeholder, otherwise validate type and maxTables
+    const order = { ...validationResult.data };
+    if (!settings.table.enabled) {
+      order.table = NO_TABLE;
+    } else {
+      const tableResult = tableValueSchema(settings.table).safeParse(order.table);
+      if (!tableResult.success) {
+        return NextResponse.json(
+          { error: tableResult.error.issues[0]?.message ?? "Invalid table", code: "INVALID_TABLE" },
+          { status: 400 }
+        );
+      }
+      order.table = tableResult.data;
     }
 
     const apiUrl = process.env.API_URL;
@@ -48,7 +65,7 @@ export async function POST(request: NextRequest) {
         "X-Forwarded-For": clientIp,
         "X-API-KEY": process.env.CLIENTI_API_KEY ?? '',
       },
-      body: JSON.stringify(validationResult.data),
+      body: JSON.stringify(order),
     });
 
     const data = await response.json();
