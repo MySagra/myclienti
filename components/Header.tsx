@@ -80,11 +80,11 @@ const Header = () => {
                   <Eye className="w-4 h-4" />
                   {t("header.viewOnly")}
                 </span>
-                <LanguageSwitcher variant="compact" />
+                <LanguageSwitcher />
               </div>
             ) : (
             <div className="absolute right-0 flex items-center gap-2">
-              <LanguageSwitcher variant="compact" />
+              <LanguageSwitcher />
               <Link
                 href="/cart"
                 className="flex items-center gap-2"

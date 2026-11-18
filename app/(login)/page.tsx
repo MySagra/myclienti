@@ -17,7 +17,7 @@ export default async function LoginPage() {
   return (
     <div className="relative bg-muted flex min-h-svh flex-col">
       <div className="absolute top-0 right-0 m-4 z-10">
-        <LanguageSwitcher />
+        <LanguageSwitcher className="bg-card shadow-sm" />
       </div>
       <div className="flex flex-1 flex-col items-center justify-center p-6 md:p-10">
         <div className="w-full max-w-sm md:max-w-4xl">
